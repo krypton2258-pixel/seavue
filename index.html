@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>望海酒馆 · SeaVue</title>
+<meta name="description" content="望海酒馆 SeaVue 精酿啤酒点单系统 —— 全品类酒单、风味档案、大小杯点单、一桌一单结账、会员储值与经营报表。">
+<meta name="theme-color" content="#0F0B1E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="望海酒馆">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:type" content="website">
+<meta property="og:title" content="望海酒馆 · SeaVue">
+<meta property="og:description" content="精酿啤酒点单系统 —— 21 款精酿，点一杯好看的。">
+<meta property="og:site_name" content="望海酒馆 · SeaVue">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="望海酒馆 · SeaVue">
+<meta name="twitter:description" content="精酿啤酒点单系统 —— 21 款精酿，点一杯好看的。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F0B1E'/%3E%3Cpath d='M18 16h28l-4 34a6 6 0 0 1-6 5H28a6 6 0 0 1-6-5z' fill='none' stroke='%23FFB44C' stroke-width='3'/%3E%3Cpath d='M20 22h24l-3 24a4 4 0 0 1-4 3H27a4 4 0 0 1-4-3z' fill='%23FFB44C' fill-opacity='.75'/%3E%3Cpath d='M19 19h26' stroke='%23FF4D9D' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0F0B1E; --card:#1A1230; --card2:#241A3D; --line:#3A2C5C;
+  --gold:#FFB44C; --pink:#FF4D9D; --cyan:#3DE2E6; --green:#5BE49B;
+  --t1:#F5E6C8; --t2:#B9A7D6; --t3:#7C6BA0;
+  --ink:#43402F;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}
+body{min-height:100vh;overflow-x:hidden}
+.scan{position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.028) 0 1px,transparent 1px 3px)}
+.grid-bg{position:fixed;left:0;right:0;bottom:0;height:38vh;z-index:0;pointer-events:none;opacity:.32;
+  background-image:linear-gradient(rgba(255,180,76,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,77,157,.18) 1px,transparent 1px);
+  background-size:100% 26px,26px 100%;transform:perspective(300px) rotateX(62deg);transform-origin:bottom}
+.horizon{position:fixed;left:0;right:0;bottom:38vh;height:2px;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--pink),transparent);
+  box-shadow:0 0 14px var(--gold),0 0 30px rgba(255,77,157,.6)}
+
+/* 顶栏 */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:10px 14px;background:rgba(15,11,30,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+.brand{font-size:19px;font-weight:700;letter-spacing:2px;color:#fff;cursor:pointer;user-select:none;
+  text-shadow:0 0 4px #fff,0 0 12px var(--gold),0 0 28px var(--pink)}
+.brand .sub{font-size:10px;letter-spacing:3px;color:var(--t3);text-shadow:none;font-weight:400;margin-left:4px}
+.topright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* 顾客端 / 店员端 双端切换器 */
+.seg{display:flex;flex:none;border:1px solid rgba(255,180,76,.35);border-radius:99px;overflow:hidden;
+  background:rgba(36,26,61,.85);box-shadow:0 0 10px rgba(255,180,76,.18)}
+.seg button{border:none;border-radius:0;background:transparent;color:var(--t2);font-size:12px;
+  padding:8px 14px;letter-spacing:1px;font-weight:600}
+.seg button:hover{color:#fff}
+.seg button.on{font-weight:700;color:#2A1708}
+.seg button.on.c{background:linear-gradient(135deg,var(--cyan),#28BFC3);
+  box-shadow:0 0 12px rgba(61,226,230,.5)}
+.seg button.on.s{background:linear-gradient(135deg,var(--gold),#FF8A3D);
+  box-shadow:0 0 12px rgba(255,180,76,.5)}
+button{font-family:inherit;font-size:13px;color:var(--t1);background:var(--card2);border:1px solid var(--line);
+  border-radius:9px;padding:7px 12px;cursor:pointer;transition:.15s}
+button:hover{border-color:var(--gold);color:#fff}
+button.primary{background:linear-gradient(135deg,var(--gold),#FF8A3D);color:#2A1708;border:none;font-weight:700;
+  box-shadow:0 0 12px rgba(255,180,76,.5)}
+button.danger{border-color:var(--pink);color:var(--pink)}
+button.ghost{background:transparent}
+button:disabled{opacity:.4;cursor:not-allowed}
+input,select{font-family:inherit;font-size:13px;color:var(--t1);background:var(--card2);
+  border:1px solid var(--line);border-radius:9px;padding:7px 10px;outline:none;max-width:100%}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 8px rgba(255,180,76,.35)}
+select option{background:var(--card2)}
+
+/* tabs */
+.tabs{position:relative;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:10px 14px 4px}
+.tabs button{flex:none;border-radius:99px;padding:6px 14px;font-size:13px;color:var(--t2);background:transparent}
+.tabs button.on{color:#2A1708;background:linear-gradient(135deg,var(--gold),#FF8A3D);border:none;font-weight:700;
+  box-shadow:0 0 12px rgba(255,180,76,.45)}
+/* 品类锚点条（顾客端吸顶）：标签多了直接换行，不加横向滚动条 */
+.tabs.anchors{position:sticky;top:53px;z-index:50;padding:8px 14px;margin:0;
+  background:rgba(15,11,30,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);flex-wrap:wrap;overflow-x:visible}
+.tabs.anchors button{background:var(--card2);border:1px solid var(--line);color:var(--t2);font-size:12px;padding:5px 12px}
+.tabs.anchors button.on{color:#2A1708;border:none}
+/* 品类分区 */
+.catsec{scroll-margin-top:104px;padding-top:6px}
+.cathead{display:flex;align-items:center;gap:10px;margin:18px 0 10px}
+.cathead h3{margin:0;font-size:16px;letter-spacing:1px;color:#fff;white-space:nowrap;
+  text-shadow:0 0 6px rgba(255,180,76,.55),0 0 16px rgba(255,77,157,.35)}
+.cdot{width:4px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--gold),var(--pink));
+  box-shadow:0 0 8px var(--gold)}
+.cnum{font-size:11px;color:var(--t3);border:1px solid var(--line);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.cline{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+main{position:relative;z-index:5;padding:8px 14px 90px;max-width:1240px;margin:0 auto}
+h2.sec{font-size:13px;color:var(--t3);font-weight:500;margin:18px 0 8px;letter-spacing:1px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+
+/* 酒款卡片 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+.beer{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;cursor:pointer;
+  transition:.18s;position:relative;overflow:hidden}
+.beer:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 6px 22px rgba(255,180,76,.18)}
+.beer .thumb{display:flex;justify-content:center;height:104px}
+.beer .nm{font-size:14px;font-weight:600;margin:4px 0 2px;text-align:center;line-height:1.35}
+.fl{flex:none;width:82px;font-size:12px;color:var(--t2);text-align:left}
+.beer .meta{font-size:11px;color:var(--t3)}
+.beer .pr{color:var(--gold);font-weight:700;font-size:15px;margin-top:4px}
+.beer .off{position:absolute;top:8px;right:8px;font-size:10px;color:var(--t3);border:1px solid var(--line);
+  border-radius:99px;padding:1px 6px}
+.beer.dim{opacity:.62}
+
+/* 列表 */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--t3);font-weight:500;font-size:11px;letter-spacing:.5px}
+td.num{color:var(--gold);font-weight:600}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--t2)}
+.tag.unpaid{color:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(255,180,76,.3)}
+.tag.paid{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px rgba(61,226,230,.3)}
+.tag.void{color:var(--pink);border-color:var(--pink)}
+.tag.off{color:var(--t3)}
+
+/* 弹窗 */
+.mask{position:fixed;inset:0;z-index:200;background:rgba(6,4,14,.82);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:14px}
+.mask.on{display:flex}
+.modal{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;width:100%;max-width:820px;
+  max-height:92vh;overflow:auto;padding:16px;box-shadow:0 0 40px rgba(255,77,157,.18)}
+.modal h3{margin:0 0 10px;font-size:17px}
+/* 关闭按钮必须抬到最上层：后面接的 position:relative 内容块会盖住浮动元素，导致点不到 */
+.x{float:right;position:relative;z-index:60;background:transparent;border:none;font-size:22px;
+  color:var(--t3);padding:2px 10px;line-height:1;cursor:pointer}
+.detail-wrap{display:flex;gap:16px;flex-wrap:wrap}
+.detail-art{flex:none;width:230px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.arrow{position:absolute;top:42%;z-index:3;width:32px;height:32px;border-radius:50%;padding:0;
+  background:rgba(36,26,61,.8);border:1px solid var(--line);font-size:15px}
+.arrow.l{left:4px}.arrow.r{right:4px}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:6px 0;border-top:1px solid var(--line);margin-top:8px}
+.strip div{flex:none;width:38px;height:44px;border-radius:9px;border:1px solid var(--line);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.15s;background:var(--card2)}
+.strip div.on{border-color:var(--gold);box-shadow:0 0 10px rgba(255,180,76,.5);transform:scale(1.08)}
+.kv{display:flex;gap:8px;margin:8px 0}
+.kv div{flex:1;background:var(--card2);border-radius:10px;padding:6px 8px}
+.kv p{margin:0;font-size:11px;color:var(--t3)}
+.kv b{font-size:14px}
+.sizebox{display:flex;gap:8px;margin-top:10px}
+.sizebox button{flex:1;text-align:left;padding:10px}
+.sizebox button.on{border-color:var(--gold);box-shadow:0 0 10px rgba(255,180,76,.4);background:rgba(255,180,76,.1)}
+
+/* 动效 */
+@keyframes rise{0%{transform:translateY(0);opacity:0}12%{opacity:.9}80%{opacity:.55}100%{transform:translateY(-104px);opacity:0}}
+.bub{animation:rise 3.4s linear infinite}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.1px)}}
+.foamg{animation:breathe 3.6s ease-in-out infinite}
+.body{transition:transform .5s cubic-bezier(.34,1.56,.64,1);transform-origin:60px 176px;transform-box:view-box}
+.tilt{transition:transform .5s cubic-bezier(.34,1.56,.64,1);transform-origin:60px 176px;transform-box:view-box}
+.art{transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+
+/* 统计 */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.stat p{margin:0;font-size:11px;color:var(--t3)}
+.stat b{font-size:20px;color:var(--gold);text-shadow:0 0 10px rgba(255,180,76,.4)}
+.barline{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px}
+.barline .lb{flex:none;width:96px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barline .bar{flex:1;height:9px;background:var(--card2);border-radius:99px;overflow:hidden}
+.barline .bar i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--gold),var(--pink));box-shadow:0 0 8px rgba(255,180,76,.5)}
+.barline .vl{flex:none;width:52px;text-align:right;color:var(--gold);font-weight:600}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--t2);margin-top:8px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:9999;
+  background:var(--card2);border:1px solid var(--gold);color:var(--t1);padding:9px 16px;border-radius:99px;
+  font-size:13px;box-shadow:0 0 20px rgba(255,180,76,.4);opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+.note{font-size:11px;color:var(--t3);line-height:1.6;margin:6px 0 0}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold)}
+.fab{position:fixed;right:16px;bottom:18px;z-index:70;border-radius:99px;padding:12px 20px;display:none}
+@media(max-width:760px){
+  .fab{display:block}
+  .detail-art{width:100%}
+  .modal{padding:12px}
+  .x{font-size:26px;padding:6px 12px}  /* 手机端加大点按区域 */
+  /* 手机端顶栏收紧，保证切换器不挤到看不清 */
+  .brand{font-size:15px;letter-spacing:1px}
+  .brand .sub{display:none}
+  .topbar{padding:8px 10px}
+  .topright{gap:6px}
+  #tableSel{max-width:78px;padding:6px 6px;font-size:12px}
+  #cartBtn{font-size:12px;padding:6px 10px}
+  .seg button{padding:7px 10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="scan"></div><div class="grid-bg"></div><div class="horizon"></div>
+
+<header class="topbar">
+  <div class="brand" id="brand">望海酒馆<span class="sub">SeaVue · CRAFT BEER</span></div>
+  <div class="topright">
+    <select id="tableSel" title="桌号"></select>
+    <button id="cartBtn">我的点单 <b id="cartN">0</b></button>
+    <div class="seg">
+      <button id="segC" class="on c" onclick="setMode('customer')">顾客端</button>
+      <button id="segS" class="s" onclick="setMode('staff')">店员端</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+<main id="view"></main>
+
+<div class="mask" id="detailMask"><div class="modal" id="detailBox"></div></div>
+<div class="mask" id="payMask"><div class="modal" style="max-width:420px" id="payBox"></div></div>
+<div class="mask" id="bigMask"><div class="modal" style="max-width:760px" id="bigBox"></div></div>
+<div class="mask" id="memMask"><div class="modal" style="max-width:520px" id="memBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============ 数据层 ============ */
+var KEY="brew_demo_v4";
+/* 默认值（可在「设置」里自由增删改） */
+var DEF_RULES=[[2000,500],[1000,200],[500,80],[300,40]];
+var DEF_CATS=["IPA 类","深色/世涛","酸啤/果啤","小麦/白啤","拉格/皮尔森","特酿/过桶","西打/低醇"];
+var DEF_TABLES=["吧台","1号桌","2号桌","3号桌","4号桌","5号桌","6号桌","外带"];
+var DEF_STAFFS=["店长","店员 A","店员 B"];
+function rules(){return (S&&S.rules&&S.rules.length)?S.rules:DEF_RULES;}
+function bonusOf(v){var R=rules();for(var i=0;i<R.length;i++){if(v>=R[i][0])return R[i][1];}return 0;}
+function cats(){return (S&&S.cats&&S.cats.length)?S.cats:DEF_CATS;}
+function tables(){return (S&&S.tables&&S.tables.length)?S.tables:DEF_TABLES;}
+function staffs(){return (S&&S.staffs&&S.staffs.length)?S.staffs:DEF_STAFFS;}
+/* 空信息统一显示 / */
+function nv(v){return (v==null||String(v).trim()==="")?"/":v;}
+/* 该订单已收金额：优先取实收字段，兼容旧数据 */
+function paidOf(o){if(o.paidAmt!=null)return o.paidAmt;return o.st==="paid"?o.price*o.qty:0;}
+function dueOf(o){return Math.max(0,o.price*o.qty-paidOf(o));}
+/* 真实酒单（望海摸鱼喝酒基地 · 手写黑板单），价格＝330ml / 475ml 两档；
+   单一规格的酒只填大杯价 p，不填 s（下单时只有大杯可选） */
+var SEED=[
+ {n:"朝日拉格",c:4,col:"#E9C348",abv:"5%",ibu:"",p:48,s:0,tag:"清爽拉格 · 单一规格"},
+ {n:"海上有钱泡沫白啤",c:3,col:"#F2CE7A",abv:"4.8%",ibu:"",p:48,s:38,tag:"比利时白啤 · 香料柑橘 · 浑浊顺口"},
+ {n:"海鸥无糖皮尔森",c:4,col:"#EFBE45",abv:"5.2%",ibu:"",p:68,s:58,tag:"无糖 · 干净利落 · 麦香清晰"},
+ {n:"清透自酿西打",c:6,col:"#E5C05A",abv:"3.5%",ibu:"",p:68,s:58,tag:"自酿西打 · 低度微甜"},
+ {n:"小青龙提乌龙茶西打",c:6,col:"#D9A54E",abv:"3%",ibu:"",p:68,s:58,tag:"乌龙茶香 · 茶感西打"},
+ {n:"香蕉冰淇淋果泥艾尔",c:2,col:"#F2D98B",abv:"2.5%",ibu:"",p:98,s:88,tag:"香蕉果泥 · 奶昔口感 · 超低度"},
+ {n:"100派水果艾尔",c:2,col:"#E07B4F",abv:"5.2%",ibu:"",p:68,s:58,tag:"混合水果 · 果汁感"},
+ {n:"原谅TA阳光玫瑰乌龙水柠檬",c:5,col:"#D6CE6B",abv:"4%",ibu:"",p:68,s:58,tag:"阳光玫瑰葡萄 · 乌龙 · 柠檬"},
+ {n:"白桃多多酸",c:2,col:"#F0A08A",abv:"5.8%",ibu:"",p:78,s:68,tag:"白桃乳酸 · 酸甜浑浊"},
+ {n:"夏溪梅红杨梅酸IPA",c:2,col:"#B03A5B",abv:"7.2%",ibu:"",p:88,s:78,tag:"杨梅果酸 · 酸 IPA · 梅红酒体"},
+ {n:"慕特洛斯社交美式IPA",c:0,col:"#C97B2E",abv:"5.4%",ibu:"",p:68,s:58,tag:"社交型 · 美式酒花 · 易饮"},
+ {n:"不东的单一索菲亚冷IPA",c:0,col:"#C88A3C",abv:"6%",ibu:"",p:68,s:58,tag:"冷萃酒花 · 单一酒花 · 清爽"},
+ {n:"曙光乍现DDH帝国浑浊IPA",c:0,col:"#D98E2B",abv:"8%",ibu:"",p:88,s:78,tag:"双倍干投 · 帝国浑浊 · 果香炸弹"},
+ {n:"巡航大洋洲三倍干投三倍浑浊IPA",c:0,col:"#D89028",abv:"9.3%",ibu:"",p:98,s:88,tag:"大洋洲酒花 · 三倍干投 · 浑浊厚实"},
+ {n:"西楚霸王帝国IPA",c:0,col:"#B96A25",abv:"14.2%",ibu:"",p:128,s:118,tag:"超高度数 · 西楚酒花 · 慢饮重口味"},
+ {n:"港式阿华田古力特调鸡尾酒",c:5,col:"#8A5A34",abv:"6.4%",ibu:"",p:88,s:78,tag:"阿华田 · 港式特调 · 麦芽可可"},
+ {n:"放阔奇异果青杨桃碧螺春茶霞多丽白葡萄酒",c:5,col:"#E3D27A",abv:"4.6%",ibu:"",p:78,s:68,tag:"奇异果 · 青杨桃 · 碧螺春茶 · 霞多丽"},
+ {n:"冰原西柚青芒青苹果冷柠檬乌龙茶椒树蜜酒",c:5,col:"#DFA33B",abv:"7%",ibu:"",p:98,s:88,tag:"西柚青芒 · 青苹果 · 乌龙茶蜜酒"},
+ {n:"健力士爱尔兰世涛",c:1,col:"#2E2018",abv:"4.2%",ibu:"",p:62,s:0,tag:"爱尔兰世涛 · 550ml 单一规格 · 氮感顺滑"},
+ {n:"听涛榛子核桃帝国世涛",c:1,col:"#33241A",abv:"10%",ibu:"",p:98,s:88,tag:"榛子核桃 · 帝国世涛 · 厚重甜香"},
+ {n:"午后冰柠气泡茶（零酒精）",c:6,col:"#E9D75C",abv:"0%",ibu:"",p:58,s:48,tag:"零酒精 · 冰柠气泡茶 · 不喝酒也能点"}
+];
+var S=null;
+function seed(){
+  var beers=SEED.map(function(b,i){return{id:i+1,n:b.n,fn:"",cat:DEF_CATS[b.c],col:b.col,abv:b.abv,ibu:b.ibu,
+    p:b.p,s:b.s,tag:b.tag,on:!b.off,offDate:b.off||"",hl:b.hl||0,hs:b.hs||0};});
+  var orders=[],txns=[];
+  var pays=["微信","支付宝","会员卡","现金","POS"];
+  var now=new Date();
+  for(var d=6;d>=0;d--){
+    var day=new Date(now.getTime()-d*86400000);
+    var cnt=4+Math.floor(Math.random()*5);
+    for(var k=0;k<cnt;k++){
+      var b=beers[Math.floor(Math.random()*beers.length)];
+      var big=(!b.s)||Math.random()>0.35;   /* 单一规格的酒只出大杯 */
+      var t=new Date(day.getTime()-(20-Math.floor(Math.random()*13))*3600000);
+      var pay=pays[Math.floor(Math.random()*pays.length)];
+      orders.push({oid:"S"+orders.length,beer:b.id,size:big?1:2,price:big?b.p:b.s,qty:1+Math.floor(Math.random()*2),
+        table:(1+Math.floor(Math.random()*8))+"号桌",ts:t.getTime(),st:"paid",pay:pay,
+        mem:pay==="会员卡"?"13800000001":""});
+    }
+  }
+  var mems=[
+    {phone:"13800000001",name:"张伟",bal:620,tr:1500,tc:880,ts:now.getTime()-42*86400000},
+    {phone:"13900000002",name:"李娜",bal:180,tr:500,tc:320,ts:now.getTime()-21*86400000},
+    {phone:"13700000003",name:"王强",bal:0,tr:300,tc:300,ts:now.getTime()-6*86400000}
+  ];
+  mems.forEach(function(m){
+    txns.push({id:"T"+txns.length,phone:m.phone,type:"充值",amt:m.tr,bonus:bonusOf(m.tr),before:0,
+      after:m.tr+bonusOf(m.tr),ts:m.ts,memo:"开卡充值",op:"店长"});
+  });
+  return{beers:beers,orders:orders,mems:mems,txns:txns,notes:{},
+    tables:DEF_TABLES.slice(),cats:DEF_CATS.slice(),rules:DEF_RULES.map(function(r){return r.slice();}),
+    staffs:DEF_STAFFS.slice(),cps:[],gcp:{},cplog:[]};
+}
+function load(){
+  try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);}}catch(e){S=null;}
+  if(!S||!S.beers){S=seed();}
+  if(!S.notes)S.notes={};
+  if(!S.tables||!S.tables.length)S.tables=DEF_TABLES.slice();
+  if(!S.cats||!S.cats.length)S.cats=DEF_CATS.slice();
+  if(!S.rules)S.rules=DEF_RULES.map(function(r){return r.slice();});
+  if(!S.staffs||!S.staffs.length)S.staffs=DEF_STAFFS.slice();
+  if(!S.cps)S.cps=[];
+  if(!S.gcp)S.gcp={};
+  if(!S.cplog)S.cplog=[];
+  /* 券结构升级：旧的商品券只有单个 beer/cname/size/cups，统一成 items 数组 */
+  S.cps.forEach(function(c){
+    if(c.type!=="amt"&&!c.items)c.items=[{beer:c.beer||0,cname:c.cname||"",size:c.size||1,cups:c.cups||1}];
+    if(c.type==="amt"&&c.cost==null)c.cost=0;
+  });
+  save();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+/* ============ 工具 ============ */
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function money(n){return "¥"+(Math.round(n*100)/100).toFixed(0);}
+function fmt(ts){var d=new Date(ts);return (d.getMonth()+1)+"/"+d.getDate()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
+function dayKey(ts){var d=new Date(ts);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+var toastT;
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("on");},1900);}
+function lum(hex){var r=parseInt(hex.substr(1,2),16),g=parseInt(hex.substr(3,2),16),b=parseInt(hex.substr(5,2),16);return(r*299+g*587+b*114)/1000;}
+
+/* ============ 酒杯 SVG（水彩手绘风 · 锥形直杯 · 满杯 · 云朵酒头不外溢 · 霓虹光晕） ============ */
+function glass(col,opt){
+  opt=opt||{};
+  var w=opt.w||120, bubbles=!!opt.bubbles, id=opt.id||"g"+Math.random().toString(36).slice(2,7);
+  var op=lum(col)>150?0.52:(lum(col)>90?0.66:0.86);
+  var b="";
+  if(bubbles){
+    var bs=[[45,3.0,0],[52,2.1,.7],[59,2.7,1.5],[66,2.2,2.3],[73,1.9,.4],[48,1.8,2.9],
+            [56,2.4,3.4],[63,2.0,1.1],[70,1.6,2.0],[54,1.5,1.8]];
+    for(var i=0;i<bs.length;i++){
+      b+='<circle class="bub" cx="'+bs[i][0]+'" cy="170" r="'+bs[i][1]+'" fill="#FFFFFF" fill-opacity=".55" '+
+         'stroke="#FFFFFF" stroke-opacity=".8" stroke-width=".4" style="animation-delay:'+bs[i][2]+'s"/>';
+    }
+  }
+  return '<svg viewBox="0 0 120 200" width="'+w+'" class="art" aria-hidden="true">'+
+  '<defs><clipPath id="c'+id+'"><path d="M25 34 L35 172 Q36 178 42 178 L78 178 Q84 178 85 172 L95 34 Z"/></clipPath></defs>'+
+  /* 霓虹光晕背景（多层同心，无滤镜） */
+  '<ellipse cx="60" cy="96" rx="56" ry="60" fill="#FFB44C" fill-opacity=".09"/>'+
+  '<ellipse cx="60" cy="96" rx="44" ry="48" fill="#FF8A3D" fill-opacity=".09"/>'+
+  '<ellipse cx="60" cy="96" rx="33" ry="37" fill="#FF4D9D" fill-opacity=".07"/>'+
+  '<ellipse cx="60" cy="100" rx="24" ry="28" fill="#C77BFF" fill-opacity=".06"/>'+
+  /* 排线投影（不参与摇晃） */
+  '<g stroke="#43402F" stroke-opacity=".35" stroke-width="1" stroke-linecap="round">'+
+    '<path d="M30 186 L54 185"/><path d="M60 187 L88 186"/><path d="M42 190 L70 189"/><path d="M74 191 L92 190"/></g>'+
+  /* 整杯（杯身 + 酒液 + 泡沫）统一倾斜，杜绝酒体与杯子分离 */
+  '<g class="tilt">'+
+  /* 酒体：在整杯基础上做小幅反向补偿，表现酒液荡起 */
+  '<g class="body">'+
+    '<g clip-path="url(#c'+id+')">'+
+      '<rect x="20" y="46" width="80" height="140" fill="'+col+'" fill-opacity="'+op+'"/>'+
+      '<rect x="20" y="46" width="80" height="140" fill="'+col+'" fill-opacity=".18"/>'+
+      /* 暗部晕染（左右内侧，随杯壁内收） */
+      '<path d="M27 40 L36 174" stroke="#43402F" stroke-opacity=".22" stroke-width="7" fill="none"/>'+
+      '<path d="M93 40 L84 174" stroke="#43402F" stroke-opacity=".18" stroke-width="6" fill="none"/>'+
+      '<path d="M33 172 Q60 182 87 172" stroke="#43402F" stroke-opacity=".25" stroke-width="5" fill="none" stroke-linecap="round"/>'+
+      b+
+      /* 主高光（白色，沿杯壁） */
+      '<path d="M31 42 L39 170" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="3.4" stroke-linecap="round" fill="none"/>'+
+      '<path d="M37 44 L44 160" stroke="#FFFFFF" stroke-opacity=".22" stroke-width="1.6" stroke-linecap="round" fill="none"/>'+
+      '<path d="M89 44 L83 128" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="2" stroke-linecap="round" fill="none"/>'+
+      /* 液面 */
+      '<path d="M26 47 Q60 52 94 47" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.6" fill="none"/>'+
+    '</g>'+
+    /* 云朵酒头：底边与酒体水平面同一条曲线（严丝合缝），云朵只向上生长，不越杯壁、不高于杯沿 */
+    '<g class="foamg">'+
+      '<path d="M26 47 Q60 52 94 47 Q94 41 87 43 Q81 35 73 40 Q65 33 57 39 Q49 33 41 39 Q33 35 29 42 Q26 43 26 47 Z" '+
+        'fill="#FFF6E0" fill-opacity=".95" stroke="#43402F" stroke-opacity=".5" stroke-width="1"/>'+
+      '<path d="M34 44 Q46 40 58 43" stroke="#E8DDBE" stroke-opacity=".8" stroke-width="1" fill="none"/>'+
+      '<path d="M62 43 Q76 39 86 43" stroke="#E8DDBE" stroke-opacity=".7" stroke-width="1" fill="none"/>'+
+    '</g>'+
+  '</g>'+
+  /* 杯体玻璃：与酒体同属一个倾斜组，摇晃时整杯同步，绝不分离 */
+  '<path d="M25 34 L35 172 Q36 178 42 178 L78 178 Q84 178 85 172 L95 34" fill="none" stroke="#43402F" stroke-opacity=".72" stroke-width="1.8" stroke-linejoin="round"/>'+
+  '<ellipse cx="60" cy="34" rx="35" ry="5" fill="none" stroke="#43402F" stroke-opacity=".6" stroke-width="1.4"/>'+
+  '<path d="M25.5 34 A35 5 0 0 1 94.5 34" fill="none" stroke="#FFFFFF" stroke-opacity=".75" stroke-width="1.6"/>'+
+  '<g fill="#FFFFFF" fill-opacity=".45"><circle cx="47" cy="96" r="1.4"/><circle cx="51" cy="126" r="1"/>'+
+   '<circle cx="74" cy="108" r="1.2"/><circle cx="70" cy="146" r="1"/><circle cx="58" cy="158" r="1.1"/></g>'+
+  '</g>'+
+  '</svg>';
+}
+function thumb(col,w){return glass(col,{w:w||54,id:"t"+Math.random().toString(36).slice(2,7)});}
+
+/* ============ 视图状态 ============ */
+var V={mode:"customer",tab:"",cat:"",detail:-1,dsel:1,staffOpen:false,num:1,memQ:"",gq:""};
+var RANGE={from:null,to:null,label:"近 7 天"};
+
+/* ============ 渲染：tabs ============ */
+function renderTabs(){
+  var t=$("tabs"),h="";
+  if(V.mode==="customer"){
+    t.className="tabs anchors";
+    cats().forEach(function(c){
+      var n=S.beers.filter(function(b){return b.cat===c&&b.on;}).length;
+      if(!n)return;
+      h+='<button data-c="'+esc(c)+'" class="'+(V.cat===c?"on":"")+'" onclick="goCat(\''+esc(c)+'\')">'+
+         esc(c)+' <span style="opacity:.65">'+n+'</span></button>';
+    });
+  }else{
+    t.className="tabs";
+    var defs=[["order","点单 / 结账"],["member","会员"],["coupon","代金券"],["report","统计报表"],
+      ["rank","销量排行"],["goods","商品管理"],["set","设置"]];
+    defs.forEach(function(d){
+      h+='<button class="'+(V.tab===d[0]?"on":"")+'" onclick="setTab(\''+d[0]+'\')">'+d[1]+'</button>';
+    });
+  }
+  t.innerHTML=h;
+}
+function setTab(t){V.tab=t;renderTabs();renderView();}
+/* 顾客端：单页全品类，点锚点快速定位 */
+function goCat(c){
+  var el=document.getElementById("cat-"+c);
+  if(el)el.scrollIntoView({behavior:"smooth",block:"start"});
+  V.cat=c;markAnchor();
+}
+function markAnchor(){
+  var bs=$("tabs").querySelectorAll("button");
+  for(var i=0;i<bs.length;i++){
+    var on=bs[i].getAttribute("data-c")===V.cat;
+    bs[i].classList.toggle("on",on);
+    if(on&&bs[i].scrollIntoView){var b=bs[i];
+      var p=b.parentNode,pl=p.scrollWidth>p.clientWidth;
+      if(pl)p.scrollLeft=Math.max(0,b.offsetLeft-p.clientWidth/2+b.offsetWidth/2);}
+  }
+}
+function syncAnchor(){
+  if(V.mode!=="customer")return;
+  var secs=document.querySelectorAll(".catsec");
+  if(!secs.length)return;
+  var y=window.scrollY+140,cur=null;
+  for(var i=0;i<secs.length;i++){if(secs[i].offsetTop<=y)cur=secs[i];}
+  if(cur&&cur.getAttribute("data-cat")!==V.cat){V.cat=cur.getAttribute("data-cat");markAnchor();}
+}
+
+/* ============ 渲染主视图 ============ */
+function renderView(){
+  var v=$("view");
+  if(V.mode==="customer")v.innerHTML=viewCustomer();
+  else if(V.tab==="order")v.innerHTML=viewOrder();
+  else if(V.tab==="member")v.innerHTML=viewMember();
+  else if(V.tab==="coupon")v.innerHTML=viewCoupon();
+  else if(V.tab==="report")v.innerHTML=viewReport();
+  else if(V.tab==="rank")v.innerHTML=viewRank();
+  else if(V.tab==="goods")v.innerHTML=viewGoods();
+  else v.innerHTML=viewSet();
+  var n=cartList().length;$("cartN").textContent=n;
+  $("cartBtn").style.display=(V.mode==="customer")?"":"none";
+}
+
+function viewCustomer(){
+  var h='',total=0,any=false;
+  cats().forEach(function(c){
+    var list=S.beers.filter(function(b){return b.on&&b.cat===c;});
+    if(!list.length)return;
+    any=true;total+=list.length;
+    h+='<section class="catsec" id="cat-'+esc(c)+'" data-cat="'+esc(c)+'">'+
+      '<div class="cathead"><span class="cdot"></span><h3>'+esc(c)+'</h3>'+
+      '<span class="cnum">'+list.length+' 款</span><span class="cline"></span></div><div class="grid">';
+    list.forEach(function(b){
+      h+='<div class="beer" onclick="openDetail('+b.id+')"><div class="thumb">'+thumb(b.col,54)+
+        '</div><div class="nm">'+esc(b.n)+'</div><div class="meta">'+esc(nv(b.abv))+' · IBU '+esc(nv(b.ibu))+'</div>'+
+        '<div class="pr">'+money(b.p)+' <span style="font-size:11px;color:var(--t3)">/ 475ml</span></div></div>';
+    });
+    h+='</div></section>';
+  });
+  if(!any)h+='<p class="note">暂无在售酒款，请到店员端「商品管理」上架。</p>';
+  else h='<h2 class="sec">全部品类 · '+total+' 款在售</h2>'+h;
+  return h;
+}
+
+/* ---- 店员端：点单/结账 ---- */
+function viewOrder(){
+  var un=S.orders.filter(function(o){return o.st==="unpaid";});
+  var pd=S.orders.filter(function(o){return o.st==="paid";});
+  var unSum=un.reduce(function(a,o){return a+dueOf(o);},0);
+  var today=dayKey(Date.now());
+  var pdSum=pd.filter(function(o){return dayKey(o.ts)===today;}).reduce(function(a,o){return a+paidOf(o);},0);
+  var h='<div class="stats" style="margin-bottom:12px">'+
+    '<div class="stat"><p>未结账（挂单）</p><b style="color:var(--gold)">'+money(unSum)+'</b></div>'+
+    '<div class="stat"><p>今日已结账</p><b style="color:var(--cyan)">'+money(pdSum)+'</b></div>'+
+    '<div class="stat"><p>未结账条数</p><b>'+un.length+'</b></div>'+
+    '<div class="stat"><p>今日已结单量</p><b>'+pd.filter(function(o){return dayKey(o.ts)===today;}).length+'</b></div></div>';
+  h+='<div class="row" style="margin-bottom:10px"><button class="primary" onclick="openAdd(\'\')">+ 新建客单 / 加单</button>'+
+    '<button style="border-color:var(--green);color:var(--green)" onclick="pickGoodsCpTable()">🎟 商品券（选客单使用）</button>'+
+    '<span class="note" style="margin:0">一桌一单：可反复加单，最后整单一起结账；商品券在点单页单独使用，不进结账弹窗</span></div>';
+  // 未结账：按客单（桌号）分组
+  var groups={},keys=[];
+  un.forEach(function(o){
+    var t=o.table||(tables()[0]||"吧台");
+    if(!groups[t]){groups[t]={items:[],sum:0,cups:0,paid:0};keys.push(t);}
+    var g=groups[t];g.items.push(o);g.sum+=o.price*o.qty;g.cups+=o.qty;g.paid+=paidOf(o);
+  });
+  if(!keys.length)h+='<div class="card"><p class="note">当前没有待结账客单。点「+ 新建客单」开一单。</p></div>';
+  keys.forEach(function(t){
+    var g=groups[t],gc=gcpCut(t);
+    h+='<div class="card" style="margin-bottom:12px;border-color:rgba(255,180,76,.35)">'+
+      '<div class="row" style="align-items:flex-start;justify-content:space-between">'+
+        '<div class="grow"><b style="font-size:16px">'+esc(t)+'</b> '+
+          '<span class="tag unpaid">待结账</span> '+
+          '<span class="tag">'+g.items.length+' 条 / '+g.cups+' 杯</span>'+
+          '<div style="font-size:11px;color:var(--t3);margin-top:3px">开单 '+fmt(g.items[g.items.length-1].ts)+'</div>'+
+          '<div style="margin-top:6px;cursor:pointer" onclick="editNote(\''+jsq(t)+'\')">'+
+            (S.notes[t]
+              ? '<span class="note" style="display:block;color:var(--gold);border:1px dashed rgba(255,180,76,.4);border-radius:8px;padding:5px 8px">📝 '+esc(S.notes[t])+' <span style="color:var(--t3)">（点击修改）</span></span>'
+              : '<span class="tag" style="border-style:dashed">+ 添加整单备注</span>')+
+          '</div>'+
+        '</div>'+
+        '<div style="text-align:right"><p style="margin:0;font-size:11px;color:var(--t3)">本单合计</p>'+
+          '<b style="font-size:22px;color:var(--gold);text-shadow:0 0 10px rgba(255,180,76,.45)">'+money(g.sum)+'</b>'+
+          (g.paid>0.001?'<div style="font-size:11px;margin-top:2px">已结 <span style="color:var(--cyan)">'+money(g.paid)+
+            '</span> · 待结 <span style="color:var(--gold)">'+money(g.sum-g.paid)+'</span></div>':'')+
+          (gc>0.001?'<div style="font-size:11px;margin-top:2px;color:var(--green)">商品券 −'+money(gc)+'</div>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="row" style="margin:10px 0">'+
+        '<button onclick="openAdd(\''+jsq(t)+'\')">+ 加单</button>'+
+        '<button class="ghost" onclick="editNote(\''+jsq(t)+'\')">备注</button>'+
+        '<button style="border-color:var(--green);color:var(--green)" onclick="openGoodsCp(\''+jsq(t)+'\')">🎟 商品券'+(gc>0.001?'（已抵 '+money(gc)+'）':'')+'</button>'+
+        '<div class="grow"></div>'+
+        '<button class="primary" onclick="openPayT(\''+jsq(t)+'\')">结账本单 '+money(g.sum-g.paid)+'</button>'+
+      '</div>'+
+      '<div style="overflow-x:auto"><table><tr><th>酒款</th><th>规格</th><th>单价</th><th>数量</th><th>小计</th><th>已收</th><th>备注（点击写）</th><th></th></tr>';
+    g.items.forEach(function(o){
+      var b=beerOf(o.beer),pd=paidOf(o);
+      h+='<tr><td>'+esc(b?b.n:"已删除")+'</td><td>'+(o.size===1?"大杯 475":"小杯 330")+'</td><td>'+money(o.price)+'</td>'+
+        '<td><button class="ghost" style="padding:2px 8px" onclick="qty(\''+o.oid+'\',-1)">-</button> '+
+        '<b>'+o.qty+'</b> <button class="ghost" style="padding:2px 8px" onclick="qty(\''+o.oid+'\',1)">+</button></td>'+
+        '<td class="num">'+money(o.price*o.qty)+'</td>'+
+        '<td>'+(pd>0.001?'<span style="color:var(--cyan);font-size:12px">'+money(pd)+'</span>':'-')+'</td>'+
+        '<td style="cursor:pointer" onclick="itemNote(\''+o.oid+'\')">'+
+          (o.note?'<span style="color:var(--gold);font-size:12px">'+esc(o.note)+'</span>':'<span style="color:var(--t3);font-size:12px">＋ 写备注</span>')+'</td>'+
+        '<td><button class="ghost" onclick="delOrder(\''+o.oid+'\')">删</button></td></tr>';
+    });
+    h+='</table></div></div>';
+  });
+  h+='<p class="note">待结账条目不计入营业额；加单可反复进行，最后由操作者点「结账本单」标记支付方式后才写入营业额与报表。已结账条目只能作废冲正、不可删除。</p>';
+  // 今日已结账明细
+  h+='<h2 class="sec">今日已结账明细</h2><div class="card"><div style="overflow-x:auto"><table><tr><th>客单</th><th>酒款</th><th>规格</th><th>金额</th><th>支付</th><th>会员</th><th>备注</th><th>时间</th><th></th></tr>';
+  pd.filter(function(o){return dayKey(o.ts)===today;}).forEach(function(o){
+    var b=beerOf(o.beer);
+    h+='<tr><td>'+esc(o.table)+'</td><td>'+esc(b?b.n:"-")+'</td><td>'+(o.size===1?"大杯":"小杯")+'</td><td class="num">'+money(o.price*o.qty)+
+      '</td><td>'+esc(o.pay)+'</td><td>'+(o.mem?esc(memName(o.mem)):"-")+'</td>'+
+      '<td>'+(o.snote?'<span style="color:var(--gold);font-size:12px">'+esc(o.snote)+'</span>':'-')+'</td>'+
+      '<td>'+fmt(o.ts)+'</td><td><button class="ghost" onclick="voidOrder(\''+o.oid+'\')">作废</button></td></tr>';
+  });
+  h+='</table></div></div>';
+  return h;
+}
+function jsq(s){return String(s==null?"":s).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;");}
+/* 客单：加单 / 备注 / 数量 / 结账 */
+function openAdd(t){
+  var cur=t||"";
+  var h='<button class="x" onclick="closeBig()">×</button><h3>'+(cur?("加单 · 客单「"+esc(cur)+"」"):"新建客单")+'</h3>'+
+    '<div class="row" style="margin-bottom:8px"><input id="addT" value="'+esc(cur)+'" placeholder="客单 / 桌号，如：3号桌、吧台 2 位" style="flex:2" oninput="renderAddCur()">'+
+    '<input id="addQ" placeholder="搜索酒款" style="flex:1" oninput="renderAddList()"></div>'+
+    '<div class="row" style="margin-bottom:8px">'+tables()
+      .map(function(x){return '<button style="font-size:12px;padding:4px 10px" onclick="setAddT(\''+jsq(x)+'\')">'+esc(x)+'</button>';}).join("")+'</div>'+
+    '<div id="addList"></div>'+
+    '<h2 class="sec">本单已点</h2><div id="addCur"></div>';
+  $("bigBox").innerHTML=h;$("bigMask").classList.add("on");
+  renderAddList();renderAddCur();
+}
+function closeBig(){$("bigMask").classList.remove("on");renderView();}
+function setAddT(t){$("addT").value=t;renderAddCur();}
+function addTable(){return (($("addT")&&$("addT").value)||"").trim().replace(/['"\\]/g,"")||"吧台";}
+function renderAddList(){
+  var q=(($("addQ")&&$("addQ").value)||"").trim(),h="";
+  cats().forEach(function(c){
+    var list=S.beers.filter(function(b){return b.on&&b.cat===c&&(!q||b.n.indexOf(q)>=0);});
+    if(!list.length)return;
+    h+='<div class="cathead" style="margin:12px 0 6px"><span class="cdot"></span><h3 style="font-size:14px">'+esc(c)+'</h3><span class="cline"></span></div><div class="grid">';
+    list.forEach(function(b){
+      h+='<div class="beer" style="padding:8px"><div class="thumb">'+thumb(b.col,44)+'</div>'+
+        '<div class="nm" style="font-size:13px">'+esc(b.n)+'</div>'+
+        '<div class="row" style="margin-top:6px">'+
+        '<button style="flex:1;padding:5px 4px;font-size:12px" onclick="addOne('+b.id+',1)">大杯<br><b style="color:var(--gold)">'+money(b.p)+'</b></button>'+
+        (b.s?'<button style="flex:1;padding:5px 4px;font-size:12px" onclick="addOne('+b.id+',2)">小杯<br><b style="color:var(--gold)">'+money(b.s)+'</b></button>':'')+
+        '</div></div>';
+    });
+    h+='</div>';
+  });
+  $("addList").innerHTML=h||'<p class="note">没有匹配的在售酒款。</p>';
+}
+function addOne(id,size){
+  var b=beerOf(id);if(!b)return;
+  var t=addTable(),price=size===1?b.p:b.s,exist=null;
+  S.orders.forEach(function(o){if(o.st==="unpaid"&&o.beer===id&&o.size===size&&o.table===t&&!o.note)exist=o;});
+  if(exist)exist.qty++;
+  else S.orders.unshift({oid:"O"+Date.now()+Math.floor(Math.random()*99),beer:id,size:size,price:price,qty:1,
+    table:t,ts:Date.now(),st:"unpaid",pay:"",mem:"",note:""});
+  save();renderAddCur();toast("已加入：" + b.n + " · " + (size===1?"大杯":"小杯"));
+}
+function renderAddCur(){
+  var el=$("addCur");if(!el)return;
+  var t=addTable();
+  var items=S.orders.filter(function(o){return o.st==="unpaid"&&o.table===t;});
+  var sum=items.reduce(function(a,o){return a+o.price*o.qty;},0);
+  var h='<div class="row" style="align-items:center;justify-content:space-between"><b>客单「'+esc(t)+'」</b>'+
+    '<b style="color:var(--gold)">'+money(sum)+'</b></div>';
+  if(!items.length)h+='<p class="note">本单还没有酒款，点上方酒款加入。</p>';
+  items.forEach(function(o){
+    var b=beerOf(o.beer);
+    h+='<div class="row" style="align-items:center;border-bottom:1px solid var(--line);padding:7px 0">'+
+      '<div class="grow"><b>'+esc(b?b.n:"-")+'</b> <span style="font-size:12px;color:var(--t3)">'+
+      (o.size===1?"大杯 475ml":"小杯 330ml")+' × '+o.qty+' · '+money(o.price*o.qty)+'</span>'+
+      (o.note?'<div class="note" style="color:var(--gold);cursor:pointer" onclick="itemNote(\''+o.oid+'\')">📝 '+esc(o.note)+'（点击修改）</div>':'')+'</div>'+
+      '<button class="ghost" style="padding:4px 9px" onclick="qty(\''+o.oid+'\',-1)">-</button>'+
+      '<button class="ghost" style="padding:4px 9px" onclick="qty(\''+o.oid+'\',1)">+</button>'+
+      '<button class="ghost" onclick="itemNote(\''+o.oid+'\')">备注</button></div>';
+  });
+  h+='<div class="row" style="margin-top:12px"><button class="grow" onclick="closeBig()">完成</button>'+
+    '<button class="grow primary" onclick="openPayT(\''+jsq(t)+'\')">去结账 '+money(sum)+'</button></div>';
+  el.innerHTML=h;
+}
+function qty(oid,d){
+  var o=null;S.orders.forEach(function(x){if(x.oid===oid)o=x;});
+  if(!o)return;
+  o.qty+=d;
+  if(o.qty<=0){delOrder(oid);return;}
+  save();
+  if($("bigMask").classList.contains("on"))renderAddCur();else renderView();
+}
+function noteBox(title,cur,cb){
+  $("memBox").innerHTML='<button class="x" onclick="closeMem()">×</button><h3>'+esc(title)+'</h3>'+
+    '<input id="noteIn" value="'+esc(cur||"")+'" placeholder="如：常温 / 少冰 / 生日送小吃 / 分开打单" style="width:100%">'+
+    '<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">取消</button>'+
+    '<button class="grow primary" id="noteOk">保存备注</button></div>';
+  $("memMask").classList.add("on");
+  $("noteOk").onclick=function(){cb(($("noteIn").value||"").trim());closeMem();};
+  setTimeout(function(){var i=$("noteIn");if(i)i.focus();},60);
+}
+function editNote(t){
+  noteBox("客单备注 · "+t,S.notes[t]||"",function(v){
+    if(v)S.notes[t]=v;else delete S.notes[t];
+    save();renderView();toast(v?"备注已保存":"备注已清除");
+  });
+}
+function itemNote(oid){
+  var o=null;S.orders.forEach(function(x){if(x.oid===oid)o=x;});
+  if(!o)return;
+  var b=beerOf(o.beer);
+  noteBox("该条备注 · "+(b?b.n:""),o.note||"",function(v){
+    o.note=v;save();
+    if($("bigMask").classList.contains("on"))renderAddCur();else renderView();
+    toast(v?"备注已保存":"备注已清除");
+  });
+}
+function openPayT(t){
+  t=String(t||"").replace(/['"\\]/g,"");
+  var oids=S.orders.filter(function(o){return o.st==="unpaid"&&o.table===t;}).map(function(o){return o.oid;});
+  if(!oids.length){toast("该客单没有待结账条目");return;}
+  /* 关闭可能打开的加单面板，避免结账页被挡住 */
+  if($("bigMask"))$("bigMask").classList.remove("on");
+  openPay(oids,"客单「"+t+"」",t);
+}
+function beerOf(id){for(var i=0;i<S.beers.length;i++)if(S.beers[i].id===id)return S.beers[i];return null;}
+function memOf(p){for(var i=0;i<S.mems.length;i++)if(S.mems[i].phone===p)return S.mems[i];return null;}
+function memName(p){var m=memOf(p);return m?m.name:p;}
+/* 模糊查询：支持手机号片段或姓名片段 */
+function memFind(q){
+  q=(q==null?"":String(q)).trim();
+  if(!q)return [];
+  var hit=[],exact=null;
+  S.mems.forEach(function(m){
+    var inP=m.phone.indexOf(q)>=0,inN=(m.name||"").indexOf(q)>=0;
+    if(inP||inN){hit.push(m);if(!exact&&(m.phone===q||m.name===q))exact=m;}
+  });
+  if(exact){hit=[exact].concat(hit.filter(function(m){return m!==exact;}));}
+  return hit;
+}
+function delOrder(oid){
+  S.orders=S.orders.filter(function(o){return o.oid!==oid;});
+  save();
+  if($("bigMask")&&$("bigMask").classList.contains("on"))renderAddCur();else renderView();
+  toast("已删除（未结账条目）");
+}
+function voidOrder(oid){
+  var o=null;S.orders.forEach(function(x){if(x.oid===oid)o=x;});
+  if(!o)return;
+  if(o.st==="paid"&&o.mem){ // 退回会员余额
+    var m=memOf(o.mem);
+    if(m){var amt=paidOf(o);S.txns.push({id:"T"+S.txns.length,phone:m.phone,type:"作废退回",amt:amt,bonus:0,
+      before:m.bal,after:m.bal+amt,ts:Date.now(),memo:"订单作废退回"});m.bal+=amt;m.tc-=amt;}
+  }
+  o.st="void";save();renderView();toast("已作废（冲减营业额，留痕可追溯）");
+}
+
+/* ---- 结账弹窗 ---- */
+var _cpUse={};
+function cpCut(){
+  var t=window._gcp||0;
+  Object.keys(_cpUse).forEach(function(k){var c=cpOf(k);if(c&&_cpUse[k]>0)t+=cpVal(c)*_cpUse[k];});
+  return t;
+}
+function cpUse(id,d){
+  var c=cpOf(id);if(!c)return;
+  var n=Math.max(0,(_cpUse[id]||0)+d);
+  if(n>c.stock){toast("库存不足，仅剩 "+c.stock+" 张");return;}
+  if(n>0)_cpUse[id]=n;else delete _cpUse[id];
+  renderCpZone();updPay();
+}
+function renderCpZone(){
+  var box=$("cpZone");if(!box)return;
+  /* 结账处只用金额券；商品券在点单页客单上单独用 */
+  var list=(S.cps||[]).filter(function(c){return c.type==="amt"&&c.stock>0;});
+  var g=gcpCut(window._table||"");
+  var h='';
+  if(g>0.001)h+='<div class="card" style="margin-top:10px;border-color:rgba(91,228,155,.4)">'+
+    '<b style="color:var(--green)">商品券已抵 '+money(g)+'</b>'+
+    '<div class="note">该客单在点单页使用过商品券，已计入抵扣。</div></div>';
+  if(!list.length){h+='<p class="note">暂无可用金额代金券（商品券在点单页客单上使用）。</p>';box.innerHTML=h;return;}
+  h+='<div class="card" style="margin-top:10px"><b>金额代金券（选中的会从应付里扣）</b>';
+  list.forEach(function(c){
+    var n=_cpUse[c.id]||0;
+    h+='<div class="row" style="align-items:center;border-bottom:1px solid var(--line);padding:6px 0">'+
+      '<div class="grow"><b>'+esc(c.name)+'</b><div style="font-size:11px;color:var(--t3)">'+cpText(c)+
+      ' · 剩 '+c.stock+' 张</div></div>'+
+      '<button class="ghost" style="padding:2px 9px" onclick="cpUse(\''+c.id+'\',-1)">−</button>'+
+      '<b style="min-width:26px;text-align:center">'+n+'</b>'+
+      '<button class="ghost" style="padding:2px 9px" onclick="cpUse(\''+c.id+'\',1)">+</button></div>';
+  });
+  h+='</div>';
+  box.innerHTML=h;
+}
+/* 商品券：按客单使用（点单页入口） */
+var _gc={};
+function gcpCut(t){
+  if(!t||!S.gcp||!S.gcp[t])return 0;
+  var sum=0;
+  S.gcp[t].forEach(function(u){var c=cpOf(u.id);if(c)sum+=cpVal(c)*(u.n||0);});
+  return sum;
+}
+/* 点单页顶部入口：先选客单，再选商品券 */
+function pickGoodsCpTable(){
+  var keys=[];
+  S.orders.forEach(function(o){if(o.st==="unpaid"&&o.table&&keys.indexOf(o.table)<0)keys.push(o.table);});
+  var h='<button class="x" onclick="closeMem()">×</button><h3>商品券 · 选择客单</h3>';
+  if(!keys.length)h+='<p class="note">当前没有待结账客单，先「+ 新建客单 / 加单」。</p>';
+  else{
+    h+='<p class="note">点要使用的客单（商品券与任意品类券都在这里用，按券面值抵扣该单应付）。</p>';
+    keys.forEach(function(t){
+      var gc=gcpCut(t);
+      h+='<div class="row" style="align-items:center;border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px">'+
+        '<div class="grow"><b style="font-size:15px">'+esc(t)+'</b>'+
+        (gc>0.001?' <span class="tag" style="border-color:var(--green);color:var(--green)">已抵 '+money(gc)+'</span>':'')+
+        '<div style="font-size:11px;color:var(--t3)">'+
+          S.orders.filter(function(o){return o.st==="unpaid"&&o.table===t;}).length+' 条未结账</div></div>'+
+        '<button class="primary" onclick="openGoodsCp(\''+jsq(t)+'\')">用券</button></div>';
+    });
+  }
+  h+='<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">关闭</button>'+
+    '<button class="grow" onclick="closeMem();setTab(\'coupon\')">去创建券</button></div>';
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");
+}
+function openGoodsCp(t){
+  _gc={};
+  var list=(S.cps||[]).filter(function(c){return c.type!=="amt"&&c.stock>0;});
+  var h='<button class="x" onclick="closeMem()">×</button><h3>商品券 · 客单「'+esc(t)+'」</h3>';
+  if(!list.length)h+='<p class="note">还没有可用的商品券 / 任意品类券，可到「代金券」页创建。</p>';
+  else{
+    h+='<p class="note">选好张数点「确认使用」，按券面值抵扣本单应付金额。</p>';
+    list.forEach(function(c){
+      h+='<div style="border-bottom:1px solid var(--line);padding:7px 0">'+
+        '<div class="row" style="align-items:center">'+
+          '<div class="grow"><b>'+esc(c.name)+'</b> <span class="tag">'+cpTypeName(c)+'</span>'+
+          '<div style="font-size:11px;color:var(--t3);line-height:1.6;margin-top:3px">'+cpText(c)+
+          ' · 剩 '+c.stock+' 张</div></div>'+
+          '<button class="ghost" style="padding:2px 9px" onclick="gcStep(\''+jsq(c.id)+'\',-1)">−</button>'+
+          '<b id="gn_'+c.id+'" style="min-width:26px;text-align:center">0</b>'+
+          '<button class="ghost" style="padding:2px 9px" onclick="gcStep(\''+jsq(c.id)+'\',1)">+</button></div>'+
+        '</div>';
+    });
+    h+='<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">取消</button>'+
+      '<button class="grow primary" onclick="doGoodsCp(\''+jsq(t)+'\')">确认使用</button></div>';
+  }
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");
+}
+function gcStep(id,d){
+  var c=cpOf(id);if(!c)return;
+  var n=Math.max(0,(_gc[id]||0)+d);
+  if(n>c.stock){toast("库存不足，仅剩 "+c.stock+" 张");return;}
+  if(n>0)_gc[id]=n;else delete _gc[id];
+  var el=$("gn_"+id);if(el)el.textContent=n;
+}
+function doGoodsCp(t){
+  var used=[];
+  Object.keys(_gc).forEach(function(k){
+    var c=cpOf(k);if(!c||!_gc[k])return;
+    var n=Math.min(_gc[k],c.stock);if(n<=0)return;
+    c.stock-=n;c.used=(c.used||0)+n;
+    used.push({id:k,n:n,name:c.name,val:cpVal(c)*n,type:c.type||"goods"});
+    cpLog(k,c.name,c.type||"goods",n,cpVal(c)*n);
+  });
+  if(!used.length){toast("请先选择要用的商品券");return;}
+  if(!S.gcp)S.gcp={};
+  S.gcp[t]=(S.gcp[t]||[]).concat(used);
+  var sum=used.reduce(function(a,u){return a+u.val;},0);
+  save();closeMem();renderView();toast("已使用商品券抵扣 "+money(sum));
+}
+function updPay(){
+  var gross=window._sum||0,cut=cpCut(),due=Math.max(0,gross-cut);
+  window._due=due;
+  if($("payCut"))$("payCut").textContent=money(cut);
+  if($("payDue"))$("payDue").textContent=money(due);
+  var r=$("payReal");
+  if(r&&!r._dirty)r.value=due;
+  var rv=r?parseFloat(r.value):due;if(isNaN(rv))rv=due;
+  var t=$("payTip");
+  if(t)t.innerHTML=(due-rv>0.001)
+    ? '<span style="color:var(--gold)">实收 '+money(rv)+'，还差 '+money(due-rv)+' —— 差额继续挂在「待结账」，客单会显示已结 / 待结。</span>'
+    : (rv-due>0.001?'<span style="color:var(--green)">实付比应付多 '+money(rv-due)+'（找零 / 多收）。</span>'
+      :'<span style="color:var(--cyan)">全额结清。</span>');
+}
+function openPay(sel,label,table){
+  if(!sel||!sel.length){toast("请先选择要结账的条目");return;}
+  _cpUse={};
+  var sum=0;sel.forEach(function(oid){var o=null;S.orders.forEach(function(x){if(x.oid===oid)o=x;});if(o)sum+=dueOf(o);});
+  var opts=["微信","支付宝","会员卡","现金","POS"];
+  var h='<button class="x" onclick="closePay()">×</button><h3>结账 · '+esc(label||(sel.length+" 条"))+'</h3>'+
+    '<div class="row">'+
+      '<div class="stat grow"><p>单品合计</p><b>'+money(sum)+'</b></div>'+
+      '<div class="stat grow"><p>代金券抵扣</p><b id="payCut" style="color:var(--green)">'+money(0)+'</b></div>'+
+    '</div>'+
+    '<div id="cpZone"></div>'+
+    '<div class="row" style="margin-top:10px">'+
+      '<div class="stat grow"><p>应付金额</p><b id="payDue" style="font-size:22px">'+money(sum)+'</b></div>'+
+      '<div class="stat grow"><p>实付金额（可手动改）</p>'+
+      '<input id="payReal" type="number" value="'+sum+'" oninput="this._dirty=true;updPay()" '+
+      'style="width:100%;font-size:18px;font-weight:700;color:var(--gold);background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:6px 10px"></div>'+
+    '</div>'+
+    '<p class="note" id="payTip"></p>'+
+    '<p style="font-size:12px;color:var(--t3);margin:6px 0">支付方式（仅作记账标记，系统不调用任何支付接口）</p>'+
+    '<div class="row" id="payOpts">';
+  opts.forEach(function(p,i){h+='<button class="paybtn'+(i===0?" primary":"")+'">'+p+'</button>';});
+  h+='</div><div id="memArea" style="display:none;margin-top:10px">'+
+    '<label style="font-size:12px;color:var(--t2)">手机号或姓名<input id="payPhone" placeholder="如 1380 或 张伟，支持模糊" style="margin-left:6px;width:170px" oninput="window._memPhone=\'\'"></label>'+
+    '<button class="ghost" style="margin-left:6px" onclick="checkMem()">查询</button><div id="memInfo" class="note"></div></div>'+
+    '<div class="row" style="margin-top:14px"><button class="grow" onclick="closePay()">取消</button>'+
+    '<button class="grow primary" onclick="doPay()">确认结账</button></div>'+
+    '<p class="note">实付默认等于应付，可手动改：付多少记多少，没付完的差额继续留在「待结账」。若使用会员卡，按实付金额扣减会员余额并生成消费流水。</p>';
+  $("payBox").innerHTML=h;$("payMask").classList.add("on");
+  window._pay="微信";window._sum=sum;window._sel=sel;window._table=table||"";
+  window._gcp=gcpCut(table||"");
+  renderCpZone();updPay();
+  var bs=$("payBox").querySelectorAll(".paybtn");
+  for(var i=0;i<bs.length;i++)(function(btn){btn.onclick=function(){
+    for(var j=0;j<bs.length;j++)bs[j].classList.remove("primary");
+    btn.classList.add("primary");window._pay=btn.textContent;
+    $("memArea").style.display=(window._pay==="会员卡")?"":"none";};})(bs[i]);
+}
+function closePay(){$("payMask").classList.remove("on");}
+function checkMem(){
+  var q=($("payPhone").value||"").trim();
+  var box=$("memInfo");if(!box)return;
+  if(!q){box.innerHTML='<span style="color:var(--t3)">输入手机号或姓名（支持片段模糊查询）后点查询</span>';window._memPhone="";return;}
+  var list=memFind(q);
+  if(!list.length){box.innerHTML='<span style="color:var(--pink)">没有匹配的会员，请先在会员页开卡</span>';window._memPhone="";return;}
+  var h='<div style="margin-top:6px">共匹配 '+list.length+' 位，点选要使用余额的会员：</div>';
+  list.forEach(function(m){
+    var on=window._memPhone===m.phone;
+    h+='<div class="row" style="align-items:center;border:1px solid '+(on?"var(--gold)":"var(--line)")+
+      ';border-radius:9px;padding:6px 8px;margin-top:6px;cursor:pointer" onclick="pickMem(\''+esc(m.phone)+'\')">'+
+      '<div class="grow"><b style="color:var(--gold)">'+esc(m.name)+'</b> '+
+      '<span style="font-size:12px;color:var(--t2)">'+esc(m.phone)+'</span></div>'+
+      '<span style="font-size:12px;color:var(--t3)">余额 '+money(m.bal)+'</span>'+
+      (on?'<span class="tag paid" style="margin-left:6px">已选</span>':'')+'</div>';
+  });
+  box.innerHTML=h;
+  if(!window._memPhone||!memFind(q).some(function(m){return m.phone===window._memPhone;}))window._memPhone=list[0].phone;
+  var mm=memOf(window._memPhone);
+  if(mm)box.innerHTML+='<p class="note">已选：<b style="color:var(--gold)">'+esc(mm.name)+'（'+esc(mm.phone)+'）</b> · 余额 '+money(mm.bal)+
+    (mm.bal<(window._due||0)?' <span style="color:var(--pink)">余额不足</span>':'')+'</p>';
+}
+function pickMem(phone){window._memPhone=phone;checkMem();}
+function doPay(){
+  var gross=window._sum||0,cut=cpCut(),due=Math.max(0,gross-cut),t=window._table||"";
+  var rv=parseFloat($("payReal").value);
+  if(isNaN(rv)||rv<0)rv=due;
+  var real=rv,pay=window._pay,phone="";
+  if(pay==="会员卡"){
+    phone=window._memPhone||($("payPhone")?$("payPhone").value.trim():"");
+    var m=memFind(phone)[0]||memOf(phone);
+    if(!m){toast("请查询并点选一位会员");return;}
+    phone=m.phone;
+    if(m.bal<real){toast("余额不足，当前 "+money(m.bal));return;}
+    m.bal-=real;m.tc+=real;
+    S.txns.push({id:"T"+S.txns.length,phone:m.phone,type:"消费",amt:-real,bonus:0,before:m.bal+real,after:m.bal,
+      ts:Date.now(),memo:"结账消费"});
+  }
+  var cpSum=[];
+  /* 本单在点单页用过的商品券 / 任意品类券，也记进券名 */
+  if(t&&S.gcp&&S.gcp[t])S.gcp[t].forEach(function(u){cpSum.push(u.name+" × "+(u.n||1));});
+  Object.keys(_cpUse).forEach(function(k){
+    var c=cpOf(k);if(!c)return;
+    var n=Math.min(_cpUse[k]||0,c.stock);if(n<=0)return;
+    c.stock-=n;c.used=(c.used||0)+n;
+    cpSum.push(c.name+" × "+n);
+    cpLog(k,c.name,c.type||"amt",n,cpVal(c)*n);
+  });
+  if(due<=0.001){
+    /* 券已全额覆盖：不收钱，整单直接结清，支付方式记为「代金券」 */
+    window._sel.forEach(function(oid){
+      var o=null;S.orders.forEach(function(x){if(x.oid===oid)o=x;});
+      if(!o)return;
+      o.paidAmt=o.price*o.qty;o.st="paid";o.pay="代金券";o.ts2=Date.now();o.mem="";
+      if(cpSum.length)o.cps=cpSum.join("，");
+      o.snote=t?(S.notes[t]||""):(o.snote||"");
+    });
+  }else{
+    var left=real;
+    window._sel.forEach(function(oid){
+      var o=null;S.orders.forEach(function(x){if(x.oid===oid)o=x;});
+      if(!o)return;
+      if(cpSum.length)o.cps=cpSum.join("，");
+      o.mem=phone;
+      if(left<=0)return;
+      var rem=Math.max(0,o.price*o.qty-(o.paidAmt||0));
+      if(rem<=0)return;
+      if(left>=rem-0.001){o.paidAmt=o.price*o.qty;o.st="paid";o.pay=pay;o.ts2=Date.now();left-=rem;}
+      else{o.paidAmt=(o.paidAmt||0)+left;left=0;}
+      o.snote=t?(S.notes[t]||""):(o.snote||"");
+    });
+  }
+  if(t){
+    if(S.gcp)delete S.gcp[t];
+    var still=S.orders.filter(function(o){return o.st==="unpaid"&&o.table===t;}).length;
+    if(!still)delete S.notes[t];
+  }
+  /* 券抵扣记入本单第一条，供报表统计；实际抵扣以本单金额为上限（用大额券时不会虚增） */
+  var cpFace=Math.min(cut,gross),fid=window._sel&&window._sel[0];
+  if(cpFace>0.001&&fid){
+    S.orders.forEach(function(o){
+      if(o.oid!==fid)return;
+      o.cpAmt=(o.cpAmt||0)+cpFace;
+      if(cpSum.length)o.cpNames=cpSum.join("，");
+    });
+  }
+  save();closePay();$("bigMask").classList.remove("on");renderView();
+  var rest=Math.max(0,due-real);
+  toast(rest>0.001?("已收 "+money(real)+"，还剩 "+money(rest)+" 挂在待结账"):("已结账 "+money(real)+" · "+pay));
+}
+
+/* ---- 会员 ---- */
+function memQuery(){
+  V.memQ=(($("memQ")&&$("memQ").value)||"").trim();renderView();
+  setTimeout(function(){var e=$("memQ");if(e){e.focus();}},40);
+}
+function viewMember(){
+  var q=V.memQ||"";
+  var list=q?memFind(q):S.mems;
+  var h='<div class="row" style="margin-bottom:10px"><button class="primary" onclick="openNewMem()">+ 开卡（手机号 + 姓名）</button>'+
+    '<button onclick="openRecharge()">充值送钱</button></div>';
+  h+='<div class="card" style="margin-bottom:12px"><b>会员查询</b>'+
+    '<div class="row" style="margin-top:8px;align-items:center">'+
+    '<input id="memQ" placeholder="手机号或姓名，支持模糊（如 1380 / 张）" value="'+esc(q)+'" style="flex:1" onkeydown="if(event.key===\'Enter\')memQuery()">'+
+    '<button class="primary" onclick="memQuery()">查询</button>'+
+    (q?'<button class="ghost" onclick="V.memQ=\'\';renderView()">清除</button>':'')+
+    '</div><p class="note">'+(q?('匹配到 '+list.length+' 位，关键词「'+esc(q)+'」'):'共 '+S.mems.length+' 位会员')+'</p></div>';
+  h+='<div class="card"><b>会员列表</b><div style="overflow-x:auto;margin-top:8px"><table>'+
+    '<tr><th>姓名</th><th>手机号</th><th>当前余额</th><th>累计充值</th><th>累计消费</th><th>开卡时间</th><th></th></tr>';
+  if(!list.length)h+='<tr><td colspan="7" class="note">没有匹配的会员。</td></tr>';
+  list.forEach(function(m){
+    h+='<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone.replace(/(\d{3})\d{4}(\d{4})/,"$1****$2"))+'</td>'+
+      '<td class="num">'+money(m.bal)+'</td><td>'+money(m.tr)+'</td><td>'+money(m.tc)+'</td>'+
+      '<td>'+fmt(m.ts)+'</td><td><button class="ghost" onclick="openRecharge(\''+m.phone+'\')">充值</button>'+
+      '<button class="ghost" onclick="memLog(\''+m.phone+'\')">流水</button></td></tr>';
+  });
+  h+='</table></div></div>';
+  h+='<h2 class="sec">近期充值记录</h2><div class="card"><div style="overflow-x:auto"><table>'+
+    '<tr><th>时间</th><th>姓名</th><th>手机号</th><th>实收</th><th>赠送</th><th>到账总额</th><th>操作人</th></tr>';
+  S.txns.filter(function(t){return t.type==="充值";}).slice().reverse().slice(0,12).forEach(function(t){
+    var m=memOf(t.phone);
+    h+='<tr><td>'+fmt(t.ts)+'</td><td>'+esc(m?m.name:"-")+'</td><td>'+esc(t.phone)+'</td>'+
+      '<td>'+money(t.amt)+'</td><td style="color:var(--green)">+'+money(t.bonus)+'</td>'+
+      '<td class="num">'+money(t.amt+t.bonus)+'</td><td>'+esc(t.op||"-")+'</td></tr>';
+  });
+  h+='</table></div><p class="note">每笔充值自动生成流水（含实收、赠送、变动前后余额、操作人），流水只增不改不删；充值档位可在「设置 → 充值规则」里自行修改。</p></div>';
+  return h;
+}
+function openNewMem(){
+  $("memBox").innerHTML='<button class="x" onclick="closeMem()">×</button><h3>开卡（仅需手机号 + 姓名）</h3>'+
+   '<div class="row"><input id="mPhone" placeholder="手机号" style="flex:1"><input id="mName" placeholder="姓名" style="flex:1"></div>'+
+   '<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">取消</button>'+
+   '<button class="grow primary" onclick="createMem()">开卡</button></div>'+
+   '<p class="note">手机号为主键；已存在则直接调出该会员，不重复建卡。</p>';
+  $("memMask").classList.add("on");
+}
+function closeMem(){$("memMask").classList.remove("on");}
+function createMem(){
+  var p=$("mPhone").value.trim(),n=$("mName").value.trim();
+  if(!/^\d{6,}$/.test(p)){toast("请输入有效手机号");return;}
+  if(!n){toast("请输入姓名");return;}
+  var m=memOf(p);
+  if(m){toast("该手机号已是会员：" + m.name);closeMem();return;}
+  S.mems.push({phone:p,name:n,bal:0,tr:0,tc:0,ts:Date.now()});
+  save();closeMem();renderView();toast("开卡成功：" + n);
+}
+function openRecharge(phone){
+  var h='<button class="x" onclick="closeMem()">×</button><h3>会员充值</h3>';
+  h+='<div class="row"><input id="rPhone" placeholder="手机号" value="'+(phone||"")+'" style="flex:1"></div>';
+  h+='<p style="margin:10px 0 4px;font-size:12px;color:var(--t2)">快捷档位（规则可在「设置 → 充值规则」里改）</p>'+
+     '<div class="row">';
+  rules().forEach(function(r){h+='<button onclick="setRv('+r[0]+')">充 '+r[0]+'<br><span style="font-size:11px;color:var(--green)">送 '+r[1]+'</span></button>';});
+  h+='</div>';
+  h+='<div class="row" style="margin-top:10px"><input id="rAmt" type="number" placeholder="实收金额（纯赠送填 0）" style="flex:1" oninput="updBonus()">'+
+     '<input id="rBon" type="number" placeholder="赠送金额（可改）" style="flex:1"></div>'+
+     '<p class="note">支持纯赠送：实收填 0、只填赠送金额（如活动补偿、客诉安抚），同样生成流水留痕。</p>';
+  h+='<div class="row" style="margin-top:10px;align-items:center;gap:8px">'+
+     '<span style="font-size:12px;color:var(--t2)">操作人</span>'+
+     '<select id="rOp" style="flex:1">'+staffs().map(function(s){
+       return '<option'+(s===staffs()[0]?" selected":"")+'>'+esc(s)+'</option>';}).join("")+'</select></div>';
+  h+='<p class="note" id="rTip"></p>';
+  h+='<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">取消</button>'+
+     '<button class="grow primary" onclick="doRecharge()">确认充值</button></div>';
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");updBonus();
+}
+function setRv(v){$("rAmt").value=v;updBonus();}
+function updBonus(){
+  var v=parseFloat($("rAmt").value)||0;
+  $("rBon").value=bonusOf(v);
+  $("rTip").textContent=(($("rAmt").value===""?"":($("rAmt").value==="0"?"纯赠送模式（实收 0）：":"实收 "+v+" 元，按规则赠送 "+bonusOf(v)+" 元，到账 "+(v+bonusOf(v))+" 元（赠送额可手动修改）")));
+}
+function doRecharge(){
+  var p=$("rPhone").value.trim(),amt=parseFloat($("rAmt").value)||0,bon=parseFloat($("rBon").value)||0;
+  var op=($("rOp")&&$("rOp").value)||staffs()[0]||"店长";
+  var m=memOf(p);
+  if(!m){toast("会员不存在，请先开卡");return;}
+  if(amt<0||bon<0){toast("金额不能为负数");return;}
+  if(amt<=0&&bon<=0){toast("请输入实收金额或赠送金额");return;}
+  var giftOnly=(amt<=0&&bon>0);
+  var before=m.bal;m.bal+=amt+bon;m.tr+=amt;
+  S.txns.push({id:"T"+S.txns.length,phone:p,type:"充值",amt:amt,bonus:bon,before:before,after:m.bal,
+    ts:Date.now(),memo:giftOnly?"纯赠送（实收 0）":"门店充值",op:op});
+  save();closeMem();renderView();
+  toast(giftOnly?("已赠送 "+bon+" 元，余额 "+m.bal):("充值成功，到账 "+(amt+bon)+" 元，余额 "+m.bal+"（操作人 "+op+"）"));
+}
+function memLog(phone){
+  var m=memOf(phone);
+  var rows=S.txns.filter(function(t){return t.phone===phone;}).slice().reverse();
+  var h='<button class="x" onclick="closeMem()">×</button><h3>余额流水 · '+esc(m.name)+'</h3>'+
+    '<div class="stat"><p>当前总余额</p><b>'+money(m.bal)+'</b></div>'+
+    '<div style="overflow-x:auto;margin-top:8px"><table><tr><th>时间</th><th>类型</th><th>变动</th><th>变动前</th><th>变动后</th><th>备注</th></tr>';
+  rows.forEach(function(t){
+    var plus=t.amt>=0;
+    h+='<tr><td>'+fmt(t.ts)+'</td><td>'+esc(t.type)+'</td>'+
+      '<td style="color:'+(plus?"var(--green)":"var(--pink)")+'">'+(plus?"+":"")+money(t.amt)+
+      (t.bonus?' <span style="color:var(--green);font-size:11px">(送'+money(t.bonus)+')</span>':'')+'</td>'+
+      '<td>'+money(t.before)+'</td><td class="num">'+money(t.after)+'</td><td>'+esc(t.memo||"")+'</td></tr>';
+  });
+  h+='</table></div><p class="note">余额 = 累计实充本金 + 累计赠送 − 累计消费；由流水汇总得出，可逐笔追溯。</p>';
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");
+}
+
+/* ---- 统计报表 ---- */
+function rangeOrders(){
+  var f=RANGE.from?new Date(RANGE.from+"T00:00:00").getTime():Date.now()-6*86400000;
+  var t=RANGE.to?new Date(RANGE.to+"T23:59:59").getTime():Date.now();
+  /* 以「结账时间」为准（未结账不计入），保证今日账单实时同步 */
+  return S.orders.filter(function(o){var ts=o.ts2||o.ts;return o.st==="paid"&&ts>=f&&ts<=t;});
+}
+function setRange(lbl,d1,d2){
+  var now=new Date();
+  if(lbl==="近 7 天"){RANGE.from=dayKey(now.getTime()-6*86400000);RANGE.to=dayKey(now.getTime());}
+  else if(lbl==="今日"){RANGE.from=RANGE.to=dayKey(now.getTime());}
+  else if(lbl==="昨日"){RANGE.from=RANGE.to=dayKey(now.getTime()-86400000);}
+  else if(lbl==="本月"){RANGE.from=now.getFullYear()+"-"+("0"+(now.getMonth()+1)).slice(-2)+"-01";RANGE.to=dayKey(now.getTime());}
+  else if(lbl==="全部"){RANGE.from="2020-01-01";RANGE.to=dayKey(now.getTime());}
+  else {RANGE.from=d1;RANGE.to=d2;}
+  RANGE.label=lbl;renderView();
+}
+function viewReport(){
+  var os=rangeOrders();
+  var sum=os.reduce(function(a,o){return a+paidOf(o);},0);
+  var cups=os.reduce(function(a,o){return a+o.qty;},0);
+  var days={};os.forEach(function(o){var k=dayKey(o.ts);days[k]=(days[k]||0)+paidOf(o);});
+  var dayArr=Object.keys(days).sort();
+  var maxD=Math.max.apply(null,dayArr.map(function(k){return days[k];}).concat([1]));
+  var payMap={};os.forEach(function(o){payMap[o.pay]=(payMap[o.pay]||0)+paidOf(o);});
+  var payArr=Object.keys(payMap).map(function(k){return{k:k,v:payMap[k]};}).sort(function(a,b){return b.v-a.v;});
+  var bigC=os.filter(function(o){return o.size===1;}).reduce(function(a,o){return a+o.qty;},0);
+  var smlC=cups-bigC;
+  /* 代金券与作废：同样纳入报表，实时同步 */
+  var cpSum=os.reduce(function(a,o){return a+(o.cpAmt||0);},0);
+  var f0=RANGE.from?new Date(RANGE.from+"T00:00:00").getTime():0;
+  var t0=RANGE.to?new Date(RANGE.to+"T23:59:59").getTime():Date.now();
+  var voids=S.orders.filter(function(o){var ts=o.ts2||o.ts;return o.st==="void"&&ts>=f0&&ts<=t0;});
+  var voidSum=voids.reduce(function(a,o){return a+paidOf(o);},0);
+  var h='<div class="card" style="margin-bottom:12px"><div class="row" style="align-items:center;gap:8px">'+
+    '<b>时间区间</b>'+
+    ["今日","昨日","近 7 天","本月","全部"].map(function(l){
+      return '<button class="'+(RANGE.label===l?"primary":"")+'" onclick="setRange(\''+l+'\')">'+l+'</button>';}).join("")+
+    '<input type="date" id="d1" value="'+(RANGE.from||"")+'" style="width:140px">'+
+    '<input type="date" id="d2" value="'+(RANGE.to||"")+'" style="width:140px">'+
+    '<button onclick="setRange(\'自定义\',document.getElementById(\'d1\').value,document.getElementById(\'d2\').value)">应用</button>'+
+    '</div><p class="note">当前区间：'+esc(RANGE.from||"-")+' 至 '+esc(RANGE.to||"-")+' · 口径：仅「已结账且未作废」</p></div>';
+  h+='<div class="stats"><div class="stat"><p>营业额</p><b>'+money(sum)+'</b></div>'+
+    '<div class="stat"><p>售出杯数</p><b>'+cups+'</b></div>'+
+    '<div class="stat"><p>客单价</p><b>'+money(os.length?sum/os.length:0)+'</b></div>'+
+    '<div class="stat"><p>订单数</p><b>'+os.length+'</b></div>'+
+    '<div class="stat"><p>大杯 / 小杯</p><b style="font-size:16px">'+bigC+' / '+smlC+'</b></div>'+
+    '<div class="stat"><p>券抵扣面值</p><b style="color:var(--green)">'+money(cpSum)+'</b></div>'+
+    '<div class="stat"><p>已作废</p><b style="color:var(--pink);font-size:16px">'+money(voidSum)+
+      ' <span style="font-size:11px;color:var(--t3)">/ '+voids.length+' 条</span></b></div></div>';
+  // 趋势柱状图
+  h+='<h2 class="sec">营业额趋势（按日）</h2><div class="card"><div style="display:flex;align-items:flex-end;gap:6px;height:150px;overflow-x:auto">';
+  dayArr.forEach(function(k){
+    var hh=Math.max(4,Math.round(days[k]/maxD*130));
+    h+='<div style="flex:none;width:38px;text-align:center"><div style="height:'+hh+'px;background:linear-gradient(180deg,var(--gold),var(--pink));border-radius:5px 5px 0 0;box-shadow:0 0 10px rgba(255,180,76,.4)"></div>'+
+      '<div style="font-size:10px;color:var(--t3);margin-top:4px">'+k.slice(5)+'</div>'+
+      '<div style="font-size:10px;color:var(--gold)">'+Math.round(days[k])+'</div></div>';
+  });
+  h+='</div></div>';
+  // 支付方式
+  h+='<h2 class="sec">支付方式占比</h2><div class="card"><div class="row" style="align-items:center;gap:16px">'+
+    donut(payArr,sum)+'<div class="grow">';
+  var cols={"微信":"#5BE49B","支付宝":"#3DE2E6","会员卡":"#FFB44C","现金":"#FF4D9D","POS":"#C77BFF"};
+  payArr.forEach(function(p){
+    h+='<div class="barline"><span class="lb">'+esc(p.k)+'</span><span class="bar"><i style="width:'+
+      Math.round(p.v/(sum||1)*100)+'%;background:'+(cols[p.k]||"#FFB44C")+'"></i></span>'+
+      '<span class="vl">'+money(p.v)+'</span></div>';
+  });
+  h+='</div></div></div>';
+  // 按日明细
+  h+='<h2 class="sec">区间内每日汇总</h2><div class="card"><div style="overflow-x:auto"><table>'+
+    '<tr><th>日期</th><th>单量</th><th>杯数</th><th>营业额</th><th>券抵扣</th><th>TOP 酒款</th></tr>';
+  dayArr.slice().reverse().forEach(function(k){
+    var dd=os.filter(function(o){return dayKey(o.ts2||o.ts)===k;});
+    var cnt2={};dd.forEach(function(o){cnt2[o.beer]=(cnt2[o.beer]||0)+o.qty;});
+    var top="-",mx=0;Object.keys(cnt2).forEach(function(b){if(cnt2[b]>mx){mx=cnt2[b];var bb=beerOf(+b);top=(bb?bb.n:"?")+" ×"+mx;}});
+    h+='<tr><td>'+k+'</td><td>'+dd.length+'</td><td>'+dd.reduce(function(a,o){return a+o.qty;},0)+'</td>'+
+      '<td class="num">'+money(days[k])+'</td>'+
+      '<td style="color:var(--green)">'+(dd.reduce(function(a,o){return a+(o.cpAmt||0);},0)||"-")+'</td>'+
+      '<td>'+esc(top)+'</td></tr>';
+  });
+  h+='</table></div></div>';
+  // 逐笔明细（含具体时间）
+  h+='<h2 class="sec">逐笔明细（含具体时间）</h2><div class="card"><div style="overflow-x:auto"><table>'+
+    '<tr><th>结账时间</th><th>下单时间</th><th>客单</th><th>酒款</th><th>规格</th><th>数量</th><th>实收</th><th>券抵扣</th><th>支付方式</th><th>会员</th></tr>';
+  if(!os.length)h+='<tr><td colspan="10" class="note">当前区间内没有已结账订单。</td></tr>';
+  os.slice().sort(function(a,b){return (b.ts2||b.ts)-(a.ts2||a.ts);}).slice(0,200).forEach(function(o){
+    var b=beerOf(o.beer);
+    h+='<tr><td>'+fmt(o.ts2||o.ts)+'</td><td style="color:var(--t3)">'+fmt(o.ts)+'</td>'+
+      '<td>'+esc(o.table||"-")+'</td><td>'+esc(b?b.n:"已删除")+'</td><td>'+(o.size===1?"大杯":"小杯")+'</td>'+
+      '<td>'+o.qty+'</td><td class="num">'+money(paidOf(o))+'</td>'+
+      '<td style="color:var(--green)">'+(o.cpAmt?money(o.cpAmt)+
+        (o.cpNames?'<div style="font-size:10px;color:var(--t3)">'+esc(o.cpNames)+'</div>':''):"-")+'</td>'+
+      '<td>'+esc(o.pay||"-")+'</td><td>'+(o.mem?esc(memName(o.mem)):"-")+'</td></tr>';
+  });
+  h+='</table></div><p class="note">时间口径：结账时间（未结账不计入），因此今日结账会实时反映在这里；作废订单即时冲减、单独统计。</p></div>';
+  /* 代金券使用明细 */
+  var cplogs=(S.cplog||[]).filter(function(l){return l.ts>=f0&&l.ts<=t0;});
+  var faceSum=cplogs.reduce(function(a,l){return a+(l.val||0);},0);
+  h+='<h2 class="sec">代金券使用明细</h2><div class="card"><div style="overflow-x:auto"><table>'+
+    '<tr><th>使用时间</th><th>券名称</th><th>类型</th><th>张数</th><th>抵扣面值</th></tr>';
+  if(!cplogs.length)h+='<tr><td colspan="5" class="note">当前区间还没有使用过代金券。</td></tr>';
+  cplogs.slice().sort(function(a,b){return b.ts-a.ts;}).forEach(function(l){
+    h+='<tr><td>'+fmt(l.ts)+'</td><td>'+esc(l.name)+'</td><td>'+esc(cpTypeName({type:l.type}))+'</td>'+
+      '<td>'+(l.n||0)+' 张</td><td class="num" style="color:var(--green)">'+money(l.val)+'</td></tr>';
+  });
+  h+='</table></div><p class="note">区间内共使用 '+cplogs.length+' 笔券，券面值合计 <b style="color:var(--green)">'+money(faceSum)+
+    '</b>；其中落在已结账订单上的券抵扣面值为 <b style="color:var(--green)">'+money(cpSum)+
+    '</b>（券抵扣按订单金额封顶，不会虚增营业额）。</p></div>';
+  if(voids.length){
+    h+='<h2 class="sec">区间内作废记录</h2><div class="card"><div style="overflow-x:auto"><table>'+
+      '<tr><th>作废时间</th><th>客单</th><th>酒款</th><th>冲减金额</th><th>支付方式</th></tr>';
+    voids.slice().sort(function(a,b){return (b.ts2||b.ts)-(a.ts2||a.ts);}).forEach(function(o){
+      var b=beerOf(o.beer);
+      h+='<tr><td>'+fmt(o.ts2||o.ts)+'</td><td>'+esc(o.table||"-")+'</td><td>'+esc(b?b.n:"已删除")+'</td>'+
+        '<td class="num" style="color:var(--pink)">-'+money(paidOf(o))+'</td><td>'+esc(o.pay||"-")+'</td></tr>';
+    });
+    h+='</table></div></div>';
+  }
+  return h;
+}
+function donut(arr,total){
+  var r=42,c=2*Math.PI*r,off=0,g="";
+  var cols=["#FFB44C","#3DE2E6","#5BE49B","#FF4D9D","#C77BFF"];
+  arr.forEach(function(p,i){
+    var len=total?p.v/total*c:0;
+    g+='<circle cx="52" cy="52" r="'+r+'" fill="none" stroke="'+cols[i%5]+'" stroke-width="16" '+
+       'stroke-dasharray="'+len+' '+(c-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 52 52)"/>';
+    off+=len;
+  });
+  return '<svg viewBox="0 0 104 104" width="130" flex="none">'+g+
+    '<text x="52" y="50" text-anchor="middle" fill="#F5E6C8" font-size="11">营业额</text>'+
+    '<text x="52" y="66" text-anchor="middle" fill="#FFB44C" font-size="13" font-weight="bold">'+money(total)+'</text></svg>';
+}
+
+/* ---- 销量排行（含下架；区间内销量与历史累计分开统计，保证切换区间数据准确） ---- */
+function viewRank(){
+  var os=rangeOrders();
+  var map={};
+  S.beers.forEach(function(b){map[b.id]={b:b,l:0,s:0,hl:b.hl||0,hs:b.hs||0,amt:0};});
+  os.forEach(function(o){
+    if(!map[o.beer])return;
+    if(o.size===1)map[o.beer].l+=o.qty;else map[o.beer].s+=o.qty;
+    map[o.beer].amt+=paidOf(o);
+  });
+  var arr=Object.keys(map).map(function(k){return map[k];});
+  var byCup=arr.slice().sort(function(a,b){return (b.l+b.s)-(a.l+a.s);});
+  var byAmt=arr.slice().sort(function(a,b){return b.amt-a.amt;});
+  var mx=byCup[0]?(byCup[0].l+byCup[0].s):1;
+  var h='<div class="card" style="margin-bottom:12px"><div class="row" style="align-items:center;gap:8px"><b>排行区间</b>'+
+    ["今日","昨日","近 7 天","本月","全部"].map(function(l){
+      return '<button class="'+(RANGE.label===l?"primary":"")+'" onclick="setRange(\''+l+'\')">'+l+'</button>';}).join("")+
+    '<span class="note" style="margin:0">'+esc(RANGE.from||"-")+' 至 '+esc(RANGE.to||"-")+
+    ' · 只统计本区间内结账的订单，与报表同口径</span></div></div>';
+  h+='<h2 class="sec">杯数排行（当前区间 · 含已下架酒款）</h2><div class="card">';
+  byCup.slice(0,12).forEach(function(x,i){
+    var tot=x.l+x.s;
+    h+='<div class="barline"><span class="lb" style="width:34px;color:var(--gold)">'+(i+1)+'</span>'+
+      '<span class="lb" style="width:120px">'+esc(x.b.n)+(x.b.on?'':' <span class="tag off">已下架</span>')+'</span>'+
+      '<span class="bar"><i style="width:'+Math.round(tot/mx*100)+'%"></i></span>'+
+      '<span class="vl">'+tot+' 杯</span>'+
+      '<span class="note" style="width:120px;margin:0">区间 大'+x.l+'/小'+x.s+
+      ' · 历史 '+(x.hl+x.hs)+'</span></div>';
+  });
+  h+='<p class="note">排行只按所选区间内已结账订单统计（与统计报表同口径，切换「今日 / 近 7 天」数字会对得上）；「历史」是该酒款录入时的存量累计销量，单独展示、不混进排行，用于判断老酒是否值得回归。</p></div>';
+  h+='<h2 class="sec">销售额排行（当前区间）</h2><div class="card">';
+  byAmt.slice(0,10).forEach(function(x,i){
+    h+='<div class="barline"><span class="lb" style="width:34px;color:var(--gold)">'+(i+1)+'</span>'+
+      '<span class="lb" style="width:120px">'+esc(x.b.n)+(x.b.on?'':' <span class="tag off">已下架</span>')+'</span>'+
+      '<span class="bar"><i style="width:'+Math.round(x.amt/(byAmt[0].amt||1)*100)+'%"></i></span>'+
+      '<span class="vl">'+money(x.amt)+'</span></div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+/* ---- 商品管理 ---- */
+var BEER_COLORS=["#F0D878","#EBC56B","#E9C348","#E4D35A","#E8B93B","#D98E1F","#D9A63C","#DFB657",
+  "#F0A24B","#C97B2C","#A62539","#8E1B2E","#5A3210","#3B2314","#2A160C","#1C0F07"];
+function openBeerForm(id){
+  var b=id?beerOf(id):null,isNew=!b,col=b?b.col:"#D98E1F";
+  var h='<button class="x" onclick="closeMem()">×</button><h3>'+(isNew?"新增酒款":"编辑酒款")+'</h3>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">名称（简称）</span>'+
+      '<input id="bfN" placeholder="外面展示用的短名，如：西海岸 IPA" value="'+esc(b?b.n:"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">全称</span>'+
+      '<input id="bfF" placeholder="详情页小字展示的完整名，如：西柚海燕苏打西海岸IPA" value="'+esc(b?(b.fn||""):"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">品类</span>'+
+      '<select id="bfC" style="flex:1">'+cats().map(function(c){
+      return '<option'+(b&&b.cat===c?" selected":"")+'>'+esc(c)+'</option>';}).join("")+'</select></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">度数 ABV</span>'+
+      '<input id="bfA" placeholder="如 6.8%（留空显示 /）" value="'+esc(b?b.abv:"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">苦度 IBU</span>'+
+      '<input id="bfI" placeholder="如 65（留空显示 /）" value="'+esc(b?b.ibu:"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">大杯价格</span>'+
+      '<input id="bfP" type="number" placeholder="475ml 售价（必填）" value="'+(b?b.p:"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">小杯价格</span>'+
+      '<input id="bfS" type="number" placeholder="330ml 售价（选填）" value="'+(b?b.s||"":"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">风味介绍</span>'+
+      '<input id="bfT" placeholder="如：柑橘香 · 松针尾韵 · 回甘干净" value="'+esc(b?b.tag:"")+'" style="flex:1"></div>'+
+    '<p style="margin:12px 0 6px;font-size:12px;color:var(--t2)">酒液颜色（点色块，决定前台酒杯渲染）</p>'+
+    '<div class="row" id="bfSw">'+BEER_COLORS.map(function(c){
+      return '<div onclick="pickBfCol(\''+c+'\')" data-c="'+c+'" style="width:26px;height:26px;border-radius:50%;background:'+c+
+        ';border:2px solid '+(c===col?"var(--gold)":"transparent")+';cursor:pointer;flex:none"></div>';}).join("")+'</div>'+
+    '<div class="row" style="margin-top:8px;align-items:center;gap:8px">'+
+      '<span style="font-size:12px;color:var(--t2)">自由取色</span>'+
+      '<input type="color" id="bfCP" value="'+col+'" style="width:52px;height:30px;padding:0" oninput="pickBfCol(this.value)"></div>'+
+    '<input type="hidden" id="bfCol" value="'+col+'">'+
+    '<div class="row" style="margin-top:14px"><button class="grow" onclick="closeMem()">取消</button>'+
+    '<button class="grow primary" onclick="saveBeer('+(id||0)+')">'+(isNew?"保存并上架":"保存修改")+'</button></div>'+
+    '<p class="note">ABV / IBU / 风味描述留空时，前台统一显示「/」表示无信息；小杯价留空则该酒只卖大杯。</p>';
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");
+}
+function pickBfCol(c){
+  $("bfCol").value=c;$("bfCP").value=c;
+  var sw=$("bfSw");if(!sw)return;
+  var ds=sw.children;
+  for(var i=0;i<ds.length;i++)ds[i].style.borderColor=(ds[i].getAttribute("data-c")===c)?"var(--gold)":"transparent";
+}
+function saveBeer(id){
+  var n=($("bfN").value||"").trim();
+  if(!n){toast("请填写酒款名称");return;}
+  var p=parseFloat($("bfP").value);
+  if(!(p>0)){toast("请填写大杯价");return;}
+  var s=parseFloat($("bfS").value);if(!(s>0))s=0;
+  var d={n:n,fn:($("bfF").value||"").trim(),cat:$("bfC").value,col:$("bfCol").value||"#D98E1F",
+    abv:($("bfA").value||"").trim(),ibu:($("bfI").value||"").trim(),
+    p:p,s:s,tag:($("bfT").value||"").trim()};
+  if(id){
+    var b=beerOf(id);
+    if(b){b.n=d.n;b.fn=d.fn;b.cat=d.cat;b.col=d.col;b.abv=d.abv;b.ibu=d.ibu;b.p=d.p;b.s=d.s;b.tag=d.tag;}
+    toast("已保存："+n);
+  }else{
+    var maxId=0;S.beers.forEach(function(x){if(x.id>maxId)maxId=x.id;});
+    S.beers.push({id:maxId+1,n:d.n,fn:d.fn,cat:d.cat,col:d.col,abv:d.abv,ibu:d.ibu,p:d.p,s:d.s,tag:d.tag,
+      on:true,offDate:"",hl:0,hs:0});
+    toast("已上架："+n);
+  }
+  save();closeMem();renderView();
+}
+function beerQuery(){
+  V.gq=(($("gq")&&$("gq").value)||"").trim();renderView();
+  setTimeout(function(){var e=$("gq");if(e)e.focus();},40);
+}
+function viewGoods(){
+  var q=V.gq||"";
+  var onList=S.beers.filter(function(b){return b.on;});
+  var offList=S.beers.filter(function(b){return !b.on;});
+  if(q){var f=function(b){return b.n.indexOf(q)>=0||(b.fn||"").indexOf(q)>=0||(b.cat||"").indexOf(q)>=0||(b.tag||"").indexOf(q)>=0;};
+    onList=onList.filter(f);offList=offList.filter(f);}
+  var h='<div class="row" style="margin-bottom:10px"><button class="primary" onclick="openBeerForm(0)">+ 新增酒款</button>'+
+    '<span class="note" style="margin:0">下架为软删除：销量与风味档案永久保留，可一键回归</span></div>';
+  h+='<div class="card" style="margin-bottom:12px"><div class="row" style="align-items:center">'+
+    '<input id="gq" placeholder="搜酒款：简称 / 全称 / 品类 / 风味，支持模糊" value="'+esc(q)+'" style="flex:1" onkeydown="if(event.key===\'Enter\')beerQuery()">'+
+    '<button class="primary" onclick="beerQuery()">查询</button>'+
+    (q?'<button class="ghost" onclick="V.gq=\'\';renderView()">清除</button>':'')+
+    '</div><p class="note">'+(q?('在售中匹配 '+onList.length+' 款'+(offList.length?'，历史库 '+offList.length+' 款':'')):('在售 '+onList.length+' 款'))+'</p></div>';
+  h+='<div class="card"><b>在售酒款</b><div style="overflow-x:auto;margin-top:8px"><table>'+
+    '<tr><th>简称</th><th>全称</th><th>品类</th><th>ABV</th><th>IBU</th><th>大杯价</th><th>小杯价</th><th>累计销量</th><th>操作</th></tr>';
+  if(!onList.length)h+='<tr><td colspan="9" class="note">'+(q?'没有匹配的在售酒款。':'还没有在售酒款，点「+ 新增酒款」添加。')+'</td></tr>';
+  onList.forEach(function(b){
+    h+='<tr><td>'+esc(b.n)+'</td><td>'+esc(nv(b.fn))+'</td><td>'+esc(b.cat)+'</td><td>'+esc(nv(b.abv))+'</td><td>'+esc(nv(b.ibu))+'</td>'+
+      '<td>'+money(b.p)+'</td><td>'+(b.s?money(b.s):"/")+'</td><td>'+((b.hl||0)+(b.hs||0))+' 杯</td>'+
+      '<td><button class="ghost" onclick="openBeerForm('+b.id+')">编辑</button> '+
+      '<button class="ghost" onclick="offBeer('+b.id+')">下架</button></td></tr>';
+  });
+  h+='</table></div></div>';
+  h+='<h2 class="sec">历史酒款库（已下架，数据永久保留）</h2><div class="card"><div style="overflow-x:auto"><table>'+
+    '<tr><th>简称</th><th>全称</th><th>品类</th><th>下架时间</th><th>历史销量</th><th>末次售价</th><th>操作</th></tr>';
+  if(!offList.length)h+='<tr><td colspan="7" class="note">'+(q?'没有匹配的历史酒款。':'暂无下架酒款。')+'</td></tr>';
+  offList.forEach(function(b){
+    h+='<tr><td>'+esc(b.n)+'</td><td>'+esc(nv(b.fn))+'</td><td>'+esc(b.cat)+'</td><td>'+esc(b.offDate||"-")+'</td>'+
+      '<td>'+((b.hl||0)+(b.hs||0))+' 杯</td><td>'+money(b.p)+'</td>'+
+      '<td><button class="ghost" onclick="openBeerForm('+b.id+')">编辑</button> '+
+      '<button class="ghost" onclick="onBeer('+b.id+')">重新上架</button></td></tr>';
+  });
+  h+='</table></div><p class="note">下架为软删除：前台不可见，销量/价格/风味档案全部保留，一键可回归上架。</p></div>';
+  return h;
+}
+function offBeer(id){var b=beerOf(id);if(!b)return;b.on=false;b.offDate=dayKey(Date.now());save();renderView();toast(b.n+" 已下架（数据保留）");}
+function onBeer(id){var b=beerOf(id);if(!b)return;b.on=true;b.offDate="";save();renderView();toast(b.n+" 已重新上架");}
+
+/* ---- 设置：桌号 / 品类 / 充值规则 / 操作员 / 模块开关 ---- */
+function promptBox(title,ph,cur,cb){
+  $("memBox").innerHTML='<button class="x" onclick="closeMem()">×</button><h3>'+esc(title)+'</h3>'+
+    '<input id="pbIn" value="'+esc(cur||"")+'" placeholder="'+esc(ph)+'" style="width:100%">'+
+    '<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">取消</button>'+
+    '<button class="grow primary" id="pbOk">保存</button></div>';
+  $("memMask").classList.add("on");
+  $("pbOk").onclick=function(){var v=($("pbIn").value||"").trim();closeMem();cb(v);};
+  setTimeout(function(){var i=$("pbIn");if(i){i.focus();i.select();}},60);
+}
+/* 桌号 */
+function addTableDef(){promptBox("新增桌号 / 客单位置","如：7号桌、包间、外带","",function(v){
+  if(!v){toast("未填写名称");return;}
+  if(tables().indexOf(v)>=0){toast("已存在："+v);return;}
+  S.tables.push(v);save();renderTabs();renderTableSel();renderView();toast("已新增桌号："+v);});}
+function editTableDef(i){promptBox("修改桌号","",tables()[i],function(v){
+  if(!v)return;var old=tables()[i];
+  if(v!==old&&tables().indexOf(v)>=0){toast("已存在："+v);return;}
+  S.orders.forEach(function(o){if(o.table===old)o.table=v;});
+  if(S.notes[old]!=null){S.notes[v]=S.notes[old];delete S.notes[old];}
+  S.tables[i]=v;save();renderTabs();renderTableSel();renderView();toast("已改为："+v);});}
+function delTableDef(i){
+  var t=tables()[i];
+  var n=S.orders.filter(function(o){return o.st==="unpaid"&&o.table===t;}).length;
+  if(n){toast("「"+t+"」还有 "+n+" 条未结账，请先结账再删除");return;}
+  S.tables.splice(i,1);save();renderTabs();renderTableSel();renderView();toast("已删除桌号："+t);}
+/* 品类 */
+function addCat(){promptBox("新增品类标签","如：IPA 类、小麦/白啤","",function(v){
+  if(!v){toast("未填写名称");return;}
+  if(cats().indexOf(v)>=0){toast("已存在："+v);return;}
+  S.cats.push(v);save();renderTabs();renderView();toast("已新增品类："+v);});}
+function editCat(i){promptBox("修改品类名称","",cats()[i],function(v){
+  if(!v)return;var old=cats()[i];
+  if(v!==old&&cats().indexOf(v)>=0){toast("已存在："+v);return;}
+  S.beers.forEach(function(b){if(b.cat===old)b.cat=v;});
+  S.cats[i]=v;save();renderTabs();renderView();toast("已改为："+v);});}
+function delCat(i){
+  var c=cats()[i];
+  var n=S.beers.filter(function(b){return b.cat===c;}).length;
+  if(n){toast("「"+c+"」下还有 "+n+" 款酒，请先把酒款移走或下架再删除");return;}
+  S.cats.splice(i,1);save();renderTabs();renderView();toast("已删除品类："+c);}
+/* 充值规则 */
+function ruleBox(i){
+  var r=(i==null)?["",""]:rules()[i];
+  $("memBox").innerHTML='<button class="x" onclick="closeMem()">×</button><h3>'+(i==null?"新增充值档位":"修改充值档位")+'</h3>'+
+    '<div class="row"><input id="rbA" type="number" placeholder="实收金额（元）" value="'+esc(r[0])+'" style="flex:1">'+
+    '<input id="rbB" type="number" placeholder="赠送金额（元）" value="'+esc(r[1])+'" style="flex:1"></div>'+
+    '<p class="note">规则：实收金额 ≥ 设定值，即自动带出对应赠送额；赠送额在充值时可手动修改。档位按实收金额从高到低自动排序。</p>'+
+    '<div class="row" style="margin-top:12px"><button class="grow" onclick="closeMem()">取消</button>'+
+    '<button class="grow primary" id="rbOk">保存</button></div>';
+  $("memMask").classList.add("on");
+  $("rbOk").onclick=function(){
+    var a=parseFloat($("rbA").value)||0,b=parseFloat($("rbB").value)||0;
+    if(a<=0){toast("请输入实收金额");return;}
+    var dup=rules().some(function(r,idx){return r[0]===a&&idx!==i;});
+    if(dup){toast("已存在「充 "+a+"」的档位了");return;}
+    if(i==null)S.rules.push([a,b]);else S.rules[i]=[a,b];
+    S.rules.sort(function(x,y){return y[0]-x[0];});
+    save();closeMem();renderView();toast("已保存：充 "+a+" 送 "+b);};
+}
+function delRule(i){S.rules.splice(i,1);save();renderView();toast("已删除该档位");}
+/* 操作员 */
+function addStaff(){promptBox("新增操作员","如：店长、小李","",function(v){
+  if(!v){toast("未填写名称");return;}
+  if(staffs().indexOf(v)>=0){toast("已存在："+v);return;}
+  S.staffs.push(v);save();renderView();toast("已新增操作员："+v);});}
+function delStaff(i){var n=staffs()[i];S.staffs.splice(i,1);save();renderView();toast("已删除操作员："+n);}
+
+function viewSet(){
+  var h='';
+  /* 桌号 */
+  h+='<div class="card"><b>桌号 / 客单位置</b>'+
+    '<p class="note">顾客端桌号下拉、店员端开单都取这里的列表，可自由增删改。已被未结账客单占用的桌号不能删。</p>'+
+    '<div class="row" style="margin-top:8px">';
+  tables().forEach(function(t,i){
+    h+='<span class="tag" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px">'+esc(t)+
+      '<button class="ghost" style="padding:0 4px;font-size:11px" onclick="editTableDef('+i+')">改</button>'+
+      '<button class="ghost" style="padding:0 4px;font-size:11px;color:var(--pink)" onclick="delTableDef('+i+')">×</button></span>';
+  });
+  h+='</div><div style="margin-top:10px"><button class="primary" onclick="addTableDef()">+ 新增桌号</button></div></div>';
+  /* 品类 */
+  h+='<div class="card" style="margin-top:12px"><b>酒款品类标签</b>'+
+    '<p class="note">顾客端品类小标题与锚点、后台商品分类都用这里；改名会同步改掉该品类下所有酒款。品类下还有酒款时不能删。</p>'+
+    '<div class="row" style="margin-top:8px">';
+  cats().forEach(function(c,i){
+    var n=S.beers.filter(function(b){return b.cat===c;}).length;
+    h+='<span class="tag" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px">'+esc(c)+
+      '<span style="font-size:11px;color:var(--t3)">'+n+'</span>'+
+      '<button class="ghost" style="padding:0 4px;font-size:11px" onclick="editCat('+i+')">改</button>'+
+      '<button class="ghost" style="padding:0 4px;font-size:11px;color:var(--pink)" onclick="delCat('+i+')">×</button></span>';
+  });
+  h+='</div><div style="margin-top:10px"><button class="primary" onclick="addCat()">+ 新增品类</button></div></div>';
+  /* 充值规则 */
+  h+='<div class="card" style="margin-top:12px"><b>充值规则（充多少送多少）</b>'+
+    '<div style="overflow-x:auto;margin-top:8px"><table><tr><th>实收金额 ≥</th><th>赠送</th><th>到账总额</th><th></th></tr>';
+  rules().forEach(function(r,i){
+    h+='<tr><td>'+money(r[0])+'</td><td style="color:var(--green)">+'+money(r[1])+'</td><td class="num">'+money(r[0]+r[1])+
+      '</td><td><button class="ghost" onclick="ruleBox('+i+')">改</button> '+
+      '<button class="ghost" style="color:var(--pink)" onclick="delRule('+i+')">删</button></td></tr>';
+  });
+  h+='</table></div><div style="margin-top:10px"><button class="primary" onclick="ruleBox(null)">+ 新增档位</button></div></div>';
+  /* 操作员 */
+  h+='<div class="card" style="margin-top:12px"><b>操作员</b><p class="note">充值时选择「谁收的钱」，写入每一笔充值流水。</p>'+
+    '<div class="row" style="margin-top:8px">';
+  staffs().forEach(function(s,i){
+    h+='<span class="tag" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px">'+esc(s)+
+      '<button class="ghost" style="padding:0 4px;font-size:11px;color:var(--pink)" onclick="delStaff('+i+')">×</button></span>';
+  });
+  h+='</div><div style="margin-top:10px"><button class="primary" onclick="addStaff()">+ 新增操作员</button></div></div>';
+  h+='</div><div class="card" style="margin-top:12px"><b>演示数据</b><div class="row" style="margin-top:8px">'+
+    '<button onclick="resetData()">重置为种子数据</button>'+
+    '<button class="danger" onclick="clearAll()">清空全部数据</button></div>'+
+    '<p class="note">数据保存在本机浏览器 localStorage，刷新不丢失。清空后所有模块保持可用（代金券、报表等不会被关掉）。顾客端 / 店员端共用同一套数据与同一顶栏：点顶栏右上角「顾客端 | 店员端」切换器即可互切（无需口令），也可按 Ctrl+Shift+A。</p></div>';
+  return h;
+}
+function resetData(){S=seed();save();V.mode="customer";renderAll();toast("已重置为种子数据");}
+/* 清空：重建一份完整的数据骨架（所有模块全开），避免残留旧字段导致代金券等页面报错 */
+function clearAll(){S={beers:[],orders:[],mems:[],txns:[],notes:{},
+  tables:DEF_TABLES.slice(),cats:DEF_CATS.slice(),rules:DEF_RULES.map(function(r){return r.slice();}),
+  staffs:DEF_STAFFS.slice(),cps:[],gcp:{},cplog:[]};
+  V.memQ="";save();renderAll();toast("已清空，所有模块保持可用");}
+
+/* ---- 代金券 ---- */
+function cpOf(id){for(var i=0;i<S.cps.length;i++)if(S.cps[i].id===id)return S.cps[i];return null;}
+/* 券面值：金额券=可抵金额；商品券 / 任意品类券=券面值（创建时手填，结账按此抵扣） */
+function cpVal(c){return c?(c.val||0):0;}
+/* 金额券售价：「多少代多少」里的"多少" */
+function cpCost(c){return c&&c.cost?c.cost:0;}
+/* 商品券内含的多个品类（兼容旧的单商品券结构） */
+function cpItems(c){
+  if(!c)return [];
+  if(c.items&&c.items.length)return c.items;
+  if(c.beer||c.cname)return [{beer:c.beer||0,cname:c.cname||"",size:c.size||1,cups:c.cups||1}];
+  return [];
+}
+function cpItemName(it){
+  if(it&&it.beer){var b=beerOf(it.beer);if(b)return b.n;}
+  return (it&&it.cname)?it.cname:"自定义商品";
+}
+function cpTypeName(c){
+  if(!c)return "";
+  if(c.type==="amt")return "金额券";
+  if(c.type==="any")return "任意品类券";
+  return "商品券";
+}
+function cpText(c){
+  if(!c)return "";
+  if(c.type==="amt")return (cpCost(c)>0?("售 "+money(cpCost(c))+" 抵 "):"抵 ")+money(c.val);
+  if(c.type==="any")return "代 "+money(c.limit||0)+" 元以内任意酒水 × "+(c.cups||1)+" 杯 · 面值 "+money(c.val);
+  var its=cpItems(c);
+  if(!its.length)return "面值 "+money(c.val);
+  return its.map(function(it){
+    return esc(cpItemName(it))+" · "+(it.size===2?"小杯 330ml":"大杯 475ml")+" × "+(it.cups||1);
+  }).join(" ＋ ")+" · 面值 "+money(c.val);
+}
+/* 券使用流水（报表用） */
+function cpLog(id,name,type,n,val){
+  if(!S.cplog)S.cplog=[];
+  S.cplog.push({ts:Date.now(),id:id,name:name,type:type||"",n:n||0,val:val||0});
+}
+/* 酒款下拉（含已下架，避免编辑旧券时选不中） */
+function cpBeerOpts(sel){
+  var h=S.beers.map(function(b){
+    return '<option value="'+b.id+'"'+(String(sel||"")===String(b.id)?" selected":"")+'>'+esc(b.n)+(b.on?"":"（已下架）")+'</option>';
+  }).join("");
+  return h+'<option value="0"'+((!sel)?" selected":"")+'>＋ 自定义（不在酒单里的商品）</option>';
+}
+/* 商品券里的一个「品类行」 */
+function cpRowHTML(i,it){
+  it=it||{beer:0,cname:"",size:1,cups:1};
+  var custom=!it.beer;
+  return '<div class="cpitem" data-i="'+i+'" style="border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px;background:var(--card2)">'+
+    '<div class="row" style="align-items:center"><span class="fl">品类 '+(i+1)+'</span>'+
+      '<select data-k="beer" style="flex:1" onchange="cpRowCustom('+i+')">'+cpBeerOpts(it.beer)+'</select>'+
+      (i>0?'<button class="ghost" style="padding:4px 9px;color:var(--pink)" onclick="cpDelRow('+i+')">删</button>':'')+
+    '</div>'+
+    '<div class="row" data-k="cnrow" style="align-items:center;margin-top:6px'+(custom?"":";display:none")+'">'+
+      '<span class="fl">自定义名称</span>'+
+      '<input data-k="cname" placeholder="如：精酿小吃拼盘 / 限定联名杯" value="'+esc(it.cname||"")+'" style="flex:1"></div>'+
+    '<div class="row" style="align-items:center;margin-top:6px"><span class="fl">规格</span>'+
+      '<select data-k="size" style="flex:1">'+
+        '<option value="1"'+(it.size===2?"":" selected")+'>大杯 475ml</option>'+
+        '<option value="2"'+(it.size===2?" selected":"")+'>小杯 330ml</option></select></div>'+
+    '<div class="row" style="align-items:center;margin-top:6px"><span class="fl">杯数</span>'+
+      '<input data-k="cups" type="number" min="1" value="'+(it.cups||1)+'" style="flex:1"></div>'+
+  '</div>';
+}
+function cpRowCustom(i){
+  var row=document.querySelector('.cpitem[data-i="'+i+'"]');if(!row)return;
+  var sel=row.querySelector('[data-k="beer"]'),cr=row.querySelector('[data-k="cnrow"]');
+  if(cr)cr.style.display=(sel&&sel.value==="0")?"":"none";
+}
+/* ＋ 增加品类 / 商品 */
+function cpAddRow(){
+  var box=$("cfItems");if(!box)return;
+  var n=box.querySelectorAll(".cpitem").length;
+  box.insertAdjacentHTML("beforeend",cpRowHTML(n,{beer:0,cname:"",size:1,cups:1}));
+  toast("已增加 1 个品类");
+}
+function cpReadRow(row){
+  var g=function(k){var e=row.querySelector('[data-k="'+k+'"]');return e?e.value:"";};
+  return {beer:parseInt(g("beer"),10)||0,cname:(g("cname")||"").trim(),
+    size:parseInt(g("size"),10)||1,cups:Math.max(1,parseInt(g("cups"),10)||1)};
+}
+function cpReadItems(){
+  var box=$("cfItems");if(!box)return [];
+  var rows=box.querySelectorAll(".cpitem"),arr=[];
+  for(var i=0;i<rows.length;i++)arr.push(cpReadRow(rows[i]));
+  return arr;
+}
+function cpDelRow(i){
+  var box=$("cfItems");if(!box)return;
+  var rows=box.querySelectorAll(".cpitem"),arr=[];
+  for(var k=0;k<rows.length;k++){if(parseInt(rows[k].getAttribute("data-i"),10)===i)continue;arr.push(cpReadRow(rows[k]));}
+  if(!arr.length)arr=[{beer:0,cname:"",size:1,cups:1}];
+  box.innerHTML=arr.map(function(it,j){return cpRowHTML(j,it);}).join("");
+}
+function openCpForm(id,type){
+  var c=id?cpOf(id):null;
+  if(c)type=c.type||type;
+  if(!type)type="amt";
+  var isNew=!c;
+  var title=isNew?(type==="amt"?"创建金额代金券":(type==="any"?"创建任意品类券":"创建商品代金券"))
+                 :("编辑代金券 · "+cpTypeName(c));
+  var h='<button class="x" onclick="closeMem()">×</button><h3>'+esc(title)+'</h3>'+
+    '<div class="row" style="align-items:center"><span class="fl">券名称</span>'+
+    '<input id="cfN" placeholder="如：开业 100 抵 150 / 老客回馈券" value="'+esc(c?c.name:"")+'" style="flex:1"></div>';
+  if(type==="amt"){
+    h+='<div class="row" style="align-items:center;margin-top:8px"><span class="fl">售价</span>'+
+      '<input id="cfC" type="number" placeholder="这张券卖多少钱，如 100（免费发放填 0）" value="'+(c?cpCost(c):"")+'" style="flex:1"></div>'+
+      '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">抵扣面额</span>'+
+      '<input id="cfV" type="number" placeholder="可抵多少钱，如 150" value="'+(c?c.val:"")+'" style="flex:1"></div>'+
+      '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">发放数量</span>'+
+      '<input id="cfS" type="number" placeholder="张数" value="'+(c?c.stock:20)+'" style="flex:1"></div>'+
+      '<p class="note"><b>多少代多少</b>：「售价」填顾客买这张券花的钱（免费发放填 0），「抵扣面额」填这张券能抵多少钱。例：售价 100 + 面额 150 ＝ 「100 元代 150 元」。金额券在结账弹窗里选「用几张」直接抵钱。</p>';
+  }else if(type==="any"){
+    h+='<div class="row" style="align-items:center;margin-top:8px"><span class="fl">单价上限</span>'+
+      '<input id="cfL" type="number" placeholder="代多少元以内的酒水，如 68" value="'+(c?(c.limit||""):"")+'" style="flex:1"></div>'+
+      '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">可换杯数</span>'+
+      '<input id="cfC" type="number" placeholder="任意几只酒水，如 2" value="'+(c?(c.cups||1):1)+'" style="flex:1"></div>'+
+      '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">券面值</span>'+
+      '<input id="cfV" type="number" placeholder="结账时按此金额抵扣（必填）" value="'+(c?c.val:"")+'" style="flex:1"></div>'+
+      '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">发放数量</span>'+
+      '<input id="cfS" type="number" placeholder="张数" value="'+(c?c.stock:10)+'" style="flex:1"></div>'+
+      '<p class="note"><b>任意品类券</b>：不指定具体酒款 —— 只要单价在「上限」以内的任意酒水，任选「可换杯数」杯，结账时按券面值抵扣。在店员端「点单 / 结账」页点客单上的「商品券」按钮使用。</p>';
+  }else{
+    var its=cpItems(c);if(!its.length)its=[{beer:0,cname:"",size:1,cups:1}];
+    h+='<div style="margin-top:10px"><b>券内含商品（一张券可含多个品类）</b>'+
+      '<div id="cfItems">'+its.map(function(it,i){return cpRowHTML(i,it);}).join("")+'</div>'+
+      '<button id="cpAddBtn" class="ghost" style="margin-top:8px" onclick="cpAddRow()">＋ 增加品类 / 商品</button></div>'+
+      '<div class="row" style="align-items:center;margin-top:10px"><span class="fl">券面值</span>'+
+      '<input id="cfV" type="number" placeholder="结账时按此金额抵扣（必填）" value="'+(c?c.val:"")+'" style="flex:1"></div>'+
+      '<div class="row" style="align-items:center;margin-top:8px"><span class="fl">发放数量</span>'+
+      '<input id="cfS" type="number" placeholder="张数" value="'+(c?c.stock:10)+'" style="flex:1"></div>'+
+      '<p class="note"><b>商品券</b>：一张券可包含多个品类 —— 点「＋ 增加品类 / 商品」继续加行；每行可指定酒单里的酒或自定义商品，并选大杯 / 小杯与杯数。使用时在店员端「点单 / 结账」页点客单上的「商品券」按钮，按券面值抵扣该客单应付。</p>';
+  }
+  h+='<div class="row" style="align-items:center;margin-top:8px"><span class="fl">备注</span>'+
+    '<input id="cfM" placeholder="选填，如：开业活动、老客回馈" value="'+esc(c?(c.note||""):"")+'" style="flex:1"></div>'+
+    '<div class="row" style="margin-top:14px"><button class="grow" onclick="closeMem()">取消</button>'+
+    '<button class="grow primary" onclick="saveCp('+(id?("'"+jsq(id)+"'"):0)+',\''+type+'\')">保存</button></div>';
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");
+}
+function saveCp(id,type){
+  var n=($("cfN")?$("cfN").value:"")||"";n=n.trim();
+  if(!n){toast("请填写券名称");return;}
+  var stock=parseInt($("cfS")?$("cfS").value:0,10);if(!(stock>0))stock=0;
+  var v=function(e){return parseFloat(e?e.value:NaN);};
+  var d={name:n,type:type,stock:stock,note:(($("cfM")?$("cfM").value:"")||"").trim(),
+    val:0,cost:0,limit:0,cups:0,items:[]};
+  if(type==="amt"){
+    var val=v($("cfV"));
+    if(!(val>0)){toast("请填写抵扣面额");return;}
+    var co=v($("cfC"));if(isNaN(co)||co<0)co=0;
+    d.val=val;d.cost=co;
+  }else if(type==="any"){
+    var val2=v($("cfV"));
+    if(!(val2>0)){toast("请填写券面值（结账时抵扣的金额）");return;}
+    var lm=v($("cfL"));
+    if(!(lm>0)){toast("请填写单价上限（代多少元以内）");return;}
+    d.val=val2;d.limit=lm;d.cups=Math.max(1,parseInt($("cfC")?$("cfC").value:1,10)||1);
+  }else{
+    var its=cpReadItems(),ok=[];
+    if(!its.length){toast("请至少添加一个品类");return;}
+    for(var i=0;i<its.length;i++){
+      if(!its[i].beer&&!its[i].cname){toast("第 "+(i+1)+" 个品类：请选择酒款，或填写自定义名称");return;}
+      ok.push(its[i]);
+    }
+    var val3=v($("cfV"));
+    if(!(val3>0)){toast("请填写券面值（结账时抵扣的金额）");return;}
+    d.val=val3;d.items=ok;
+    d.cups=ok.reduce(function(a,it){return a+(it.cups||1);},0);
+  }
+  var c=id?cpOf(id):null;
+  if(c){
+    /* 整份字段覆盖写回，避免规格/自定义名等漏存导致"编辑保存不了" */
+    c.name=d.name;c.type=d.type;c.val=d.val;c.cost=d.cost;c.limit=d.limit;
+    c.cups=d.cups;c.items=d.items;c.stock=d.stock;c.note=d.note;
+    c.beer=0;c.cname="";c.size=0;   /* 清掉旧的单商品字段，展示一律走 items */
+    toast("已保存修改");
+  }else{
+    d.id="C"+(S.cps.length+1)+"_"+Date.now();d.ts=Date.now();d.used=0;
+    S.cps.push(d);toast("已创建："+n);
+  }
+  save();closeMem();renderView();
+}
+function delCp(id){
+  S.cps=S.cps.filter(function(c){return c.id!==id;});
+  save();renderView();toast("已删除该代金券");
+}
+function cpRowBtns(c){
+  return '<button class="ghost" onclick="openCpForm(\''+jsq(c.id)+'\',\''+esc(c.type||"goods")+'\')">编辑</button> '+
+    '<button class="ghost" style="color:var(--pink)" onclick="delCp(\''+jsq(c.id)+'\')">删</button>';
+}
+function cpEmpty(span,txt){return '<tr><td colspan="'+span+'" class="note">'+txt+'</td></tr>';}
+function viewCoupon(){
+  var h='<div class="row" style="margin-bottom:10px">'+
+    '<button class="primary" onclick="openCpForm(0,\'amt\')">+ 金额代金券</button>'+
+    '<button class="primary" onclick="openCpForm(0,\'goods\')">+ 商品代金券</button>'+
+    '<button class="primary" onclick="openCpForm(0,\'any\')">+ 任意品类券</button>'+
+    '<span class="note" style="margin:0">金额券＝「多少代多少」抵钱；商品券一张可含多个品类；任意品类券＝代指定金额以内的任意酒水 N 杯</span></div>';
+  /* 金额券 */
+  h+='<div class="card"><b>金额代金券（多少代多少）</b><div style="overflow-x:auto;margin-top:8px"><table>'+
+    '<tr><th>券名称</th><th>售价</th><th>抵扣面额</th><th>发放</th><th>备注</th><th></th></tr>';
+  var amt=S.cps.filter(function(c){return c.type==="amt";});
+  if(!amt.length)h+=cpEmpty(6,"还没有金额代金券，点上方「+ 金额代金券」创建。");
+  amt.forEach(function(c){
+    h+='<tr><td>'+esc(c.name)+'</td>'+
+      '<td class="num">'+(cpCost(c)>0?money(cpCost(c)):'<span style="color:var(--t3)">免费发放</span>')+'</td>'+
+      '<td class="num" style="color:var(--green)">'+money(c.val)+'</td><td>'+(c.stock||0)+' 张</td>'+
+      '<td>'+esc(c.note||"-")+'</td><td>'+cpRowBtns(c)+'</td></tr>';
+  });
+  h+='</table></div></div>';
+  /* 商品券 */
+  h+='<div class="card" style="margin-top:12px"><b>商品代金券（一张券可含多个品类）</b>'+
+    '<div style="overflow-x:auto;margin-top:8px"><table>'+
+    '<tr><th>券名称</th><th>兑换内容</th><th>券面值</th><th>发放</th><th>备注</th><th></th></tr>';
+  var gd=S.cps.filter(function(c){return c.type!=="amt"&&c.type!=="any";});
+  if(!gd.length)h+=cpEmpty(6,"还没有商品代金券，点上方「+ 商品代金券」创建。");
+  gd.forEach(function(c){
+    h+='<tr><td>'+esc(c.name)+'</td><td style="font-size:12px;line-height:1.6">'+cpText(c)+'</td>'+
+      '<td class="num" style="color:var(--green)">'+money(c.val)+'</td><td>'+(c.stock||0)+' 张</td>'+
+      '<td>'+esc(c.note||"-")+'</td><td>'+cpRowBtns(c)+'</td></tr>';
+  });
+  h+='</table></div></div>';
+  /* 任意品类券 */
+  h+='<div class="card" style="margin-top:12px"><b>任意品类券（代 X 元以内的任意酒水 N 杯）</b>'+
+    '<div style="overflow-x:auto;margin-top:8px"><table>'+
+    '<tr><th>券名称</th><th>兑换内容</th><th>券面值</th><th>发放</th><th>备注</th><th></th></tr>';
+  var an=S.cps.filter(function(c){return c.type==="any";});
+  if(!an.length)h+=cpEmpty(6,"还没有任意品类券，点上方「+ 任意品类券」创建。");
+  an.forEach(function(c){
+    h+='<tr><td>'+esc(c.name)+'</td><td style="font-size:12px;line-height:1.6">'+cpText(c)+'</td>'+
+      '<td class="num" style="color:var(--green)">'+money(c.val)+'</td><td>'+(c.stock||0)+' 张</td>'+
+      '<td>'+esc(c.note||"-")+'</td><td>'+cpRowBtns(c)+'</td></tr>';
+  });
+  h+='</table></div></div>';
+  h+='<p class="note">金额券在结账弹窗里选「用几张」直接抵钱；商品券与任意品类券都在店员端「点单 / 结账」页点客单上的「商品券」按钮使用，按券面值抵扣该客单应付。</p>';
+  return h;
+}
+
+/* ---- 详情弹窗 ---- */
+function openDetail(id){
+  var b=beerOf(id);if(!b)return;
+  V.detail=id;V.dsel=1;V.num=1;
+  $("detailBox").innerHTML=detailHTML(b);
+  $("detailMask").classList.add("on");
+  bindSwipe();
+}
+function closeDetail(){$("detailMask").classList.remove("on");V.detail=-1;}
+function catBeers(cat){return S.beers.filter(function(b){return b.cat===cat&&b.on;});}
+function detailHTML(b){
+  var list=catBeers(b.cat),idx=list.map(function(x){return x.id;}).indexOf(b.id);
+  var h='<button class="x" onclick="closeDetail()">×</button>'+
+    '<div style="position:relative"><div class="detail-wrap">'+
+    '<div class="detail-art"><button class="arrow l" onclick="swipe(-1)">‹</button>'+
+    '<button class="arrow r" onclick="swipe(1)">›</button>'+
+    '<div id="artBox">'+glass(b.col,{w:170,bubbles:true,id:"d"+b.id})+'</div>'+
+    '<div style="font-size:11px;color:var(--t3)">← 左右滑动切换 · 酒体跟手摇晃 →</div></div>'+
+    '<div class="grow" style="min-width:200px">'+
+      '<p style="margin:0;font-size:12px;color:var(--t3)">'+esc(b.cat)+'</p>'+
+      '<div class="row" style="align-items:baseline;gap:8px;flex-wrap:wrap">'+
+        '<h3 style="margin:0">'+esc(b.n)+'</h3>'+
+        (b.fn?'<span style="font-size:12px;color:var(--t3);line-height:1.4">'+esc(b.fn)+'</span>':'')+
+      '</div>'+
+      '<div class="kv"><div><p>ABV 酒精度</p><b>'+esc(nv(b.abv))+'</b></div><div><p>IBU 苦度</p><b>'+esc(nv(b.ibu))+'</b></div>'+
+        '<div><p>标准规格</p><b>475ml</b></div></div>'+
+      '<p style="font-size:13px;color:var(--t2);margin:6px 0 0">'+esc(nv(b.tag))+'</p>'+
+      '<div class="kv"><div><p>标准价（475ml）</p><b style="color:var(--gold)">'+money(b.p)+'</b></div></div>'+
+      sizeHTML(b)+
+      '<div class="row" style="margin-top:10px;align-items:center;gap:8px">'+
+        '<span style="font-size:12px;color:var(--t2)">数量</span>'+
+        '<button style="padding:6px 12px;font-size:16px" onclick="chgNum(-1)">−</button>'+
+        '<b id="numVal" style="min-width:30px;text-align:center;font-size:16px">'+(V.num||1)+'</b>'+
+        '<button style="padding:6px 12px;font-size:16px" onclick="chgNum(1)">+</button>'+
+        '<button class="grow primary" onclick="confirmAdd('+b.id+')">加入点单</button></div>'+
+      '<p class="note">展示页只显示 475ml 标准价；上面的规格和数量选好后，点右侧按钮一次加入（想点几杯就把数量加到几）。</p>'+
+    '</div></div>'+
+    '<div class="strip" id="strip">';
+  list.forEach(function(x,i){
+    h+='<div class="'+(x.id===b.id?"on":"")+'" onclick="goBeer('+x.id+')" title="'+esc(x.n)+'">'+thumb(x.col,30)+'</div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+function goBeer(id){var b=beerOf(id);if(!b)return;V.detail=id;V.num=1;$("detailBox").innerHTML=detailHTML(b);bindSwipe();}
+function swipe(dir){
+  var b=beerOf(V.detail);if(!b)return;
+  var list=catBeers(b.cat),idx=list.map(function(x){return x.id;}).indexOf(b.id);
+  var nx=list[(idx+dir+list.length)%list.length];if(!nx||nx.id===b.id)return;
+  // 摇晃动效：整杯（杯身+酒液+泡沫）一起倾斜，酒液小幅反向补偿表现荡起，随后回弹归位
+  var box=$("artBox");
+  if(box)slosh(box,dir*9,dir*-3.5,dir*16);
+  setTimeout(function(){
+    var nb=beerOf(nx.id);V.detail=nx.id;
+    $("detailBox").innerHTML=detailHTML(nb);bindSwipe();
+    var box2=$("artBox");
+    if(box2){
+      var tilt2=box2.querySelector(".tilt"),body2=box2.querySelector(".body"),art2=box2.querySelector(".art");
+      if(art2){art2.style.transition="none";art2.style.transform="translateX("+(-dir*22)+"px)";}
+      if(tilt2){tilt2.style.transition="none";tilt2.style.transform="rotate("+(-dir*7)+"deg)";}
+      if(body2){body2.style.transition="none";body2.style.transform="rotate("+(dir*2.5)+"deg)";}
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          if(art2){art2.style.transition="";art2.style.transform="translateX(0)";}
+          if(tilt2){tilt2.style.transition="";tilt2.style.transform="rotate(0deg)";}
+          if(body2){body2.style.transition="";body2.style.transform="rotate(0deg)";}
+        });
+      });
+    }
+  },180);
+}
+function slosh(box,tilt,body,shift){
+  var t=box.querySelector(".tilt"),b=box.querySelector(".body"),a=box.querySelector(".art");
+  if(t)t.style.transform="rotate("+tilt+"deg)";
+  if(b)b.style.transform="rotate("+body+"deg)";
+  if(a)a.style.transform="translateX("+shift+"px)";
+}
+function bindSwipe(){
+  var el=$("detailBox");if(!el)return;
+  if(el._sw)return;            /* 只绑一次，避免每次重绘叠加监听 */
+  el._sw=1;
+  var x0=null,y0=null;
+  el.addEventListener("touchstart",function(e){
+    x0=e.touches[0].clientX;y0=e.touches[0].clientY;
+  },{passive:true});
+  el.addEventListener("touchend",function(e){
+    if(x0===null)return;
+    var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    /* 横向位移够大且不是纵向滚动时才切换 */
+    if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))swipe(dx<0?1:-1);
+  });
+}
+function sizeHTML(b){
+  return '<div class="sizebox" id="sizeArea">'+
+    '<button class="'+(V.dsel===1?"on":"")+'" onclick="pickSize(1)">大杯 475ml<br><b style="color:var(--gold);font-size:16px">'+money(b.p)+'</b></button>'+
+    (b.s?'<button class="'+(V.dsel===2?"on":"")+'" onclick="pickSize(2)">小杯 330ml<br><b style="color:var(--gold);font-size:16px">'+money(b.s)+'</b></button>':'')+
+    '</div>';
+}
+function pickSize(n){
+  V.dsel=n;var b=beerOf(V.detail);if(!b)return;
+  var bs=$("sizeArea").querySelectorAll("button");
+  for(var i=0;i<bs.length;i++)bs[i].classList.remove("on");
+  if(bs[n-1])bs[n-1].classList.add("on");
+}
+function chgNum(d){
+  V.num=Math.max(1,Math.min(99,(V.num||1)+d));
+  var el=$("numVal");if(el)el.textContent=V.num;
+}
+function confirmAdd(id){
+  var b=beerOf(id);if(!b)return;
+  var size=V.dsel,price=size===1?b.p:b.s,n=V.num||1;
+  if(size===2&&!b.s){size=1;price=b.p;}
+  var exist=null;
+  S.orders.forEach(function(o){if(o.st==="unpaid"&&o.beer===id&&o.size===size&&o.table===curTable()&&!o.note)exist=o;});
+  if(exist)exist.qty+=n;
+  else S.orders.unshift({oid:"O"+Date.now()+Math.floor(Math.random()*99),beer:id,size:size,price:price,qty:n,
+    table:curTable(),ts:Date.now(),st:"unpaid",pay:"",mem:"",note:"",paidAmt:0});
+  V.num=1;save();closeDetail();renderView();
+  toast("已加入点单：" + b.n + " · " + (size===1?"大杯":"小杯") + " × " + n);
+}
+function renderTableSel(){
+  var sel=$("tableSel");if(!sel)return;
+  var cur=sel.value,h="";
+  tables().forEach(function(t){h+='<option'+(t===cur?" selected":"")+'>'+esc(t)+'</option>';});
+  sel.innerHTML=h;
+  if(tables().indexOf(cur)<0)sel.value=tables()[0]||"";
+}
+function curTable(){return ($("tableSel")&&$("tableSel").value)||tables()[0]||"吧台";}
+function cartList(){return S.orders.filter(function(o){return o.st==="unpaid"&&o.table===curTable();});}
+
+/* ---- 顾客端：我的点单（不含金额与结账状态） ---- */
+function openCart(){
+  var list=cartList();
+  var h='<button class="x" onclick="closeMem()">×</button><h3>我的点单</h3>';
+  if(!list.length)h+='<p class="note">还没有点单，去挑一杯吧。</p>';
+  list.forEach(function(o){
+    var b=beerOf(o.beer);
+    h+='<div class="row" style="align-items:center;border-bottom:1px solid var(--line);padding:8px 0">'+
+      '<div style="width:40px">'+thumb(b?b.col:"#D98E1F",34)+'</div>'+
+      '<div class="grow"><b>'+esc(b?b.n:"-")+'</b><div style="font-size:12px;color:var(--t3)">'+
+      (o.size===1?"大杯 475ml":"小杯 330ml")+' × '+o.qty+'</div></div>'+
+      '<button class="ghost" onclick="custDel(\''+o.oid+'\')">删除</button></div>';
+  });
+  $("memBox").innerHTML=h;$("memMask").classList.add("on");
+}
+function custDel(oid){delOrder(oid);openCart();}
+
+/* ---- 隐藏入口 ---- */
+var taps=0,tapT;
+function brandTap(){
+  taps++;clearTimeout(tapT);tapT=setTimeout(function(){taps=0;},1200);
+  if(taps>=5){taps=0;toggleStaff();}
+}
+function enterStaff(){
+  V.mode="staff";V.staffOpen=true;
+  if(!V.tab)V.tab="order";
+  $("segS").classList.add("on");$("segC").classList.remove("on");
+  $("tableSel").style.display="none";$("cartBtn").style.display="none";
+  window.scrollTo(0,0);renderAll();
+}
+function exitStaff(){
+  V.mode="customer";
+  $("segC").classList.add("on");$("segS").classList.remove("on");
+  $("tableSel").style.display="";$("cartBtn").style.display="";
+  window.scrollTo(0,0);renderAll();
+}
+/* 顾客端 / 店员端 一键互切：无需口令，点一下即到另一端 */
+function setMode(m){if(m===V.mode)return;if(m==="staff")enterStaff();else exitStaff();}
+function toggleStaff(){if(V.mode==="customer")enterStaff();else exitStaff();}
+document.addEventListener("keydown",function(e){
+  if(e.ctrlKey&&e.shiftKey&&(e.key==="A"||e.key==="a")){e.preventDefault();toggleStaff();}
+});
+
+/* 全量渲染：桌号下拉也要一起刷新，保证新增 / 改名 / 删除桌号后顾客端立即同步 */
+function renderAll(){renderTabs();renderTableSel();renderView();}
+
+/* ---- 启动 ---- */
+(function init(){
+  load();
+  renderTableSel();
+  $("tableSel").addEventListener("change",function(){renderView();});
+  $("brand").addEventListener("click",brandTap);
+  $("cartBtn").addEventListener("click",openCart);
+  [$("detailMask"),$("payMask"),$("memMask"),$("bigMask")].forEach(function(m){
+    m.addEventListener("click",function(e){if(e.target===m){m.classList.remove("on");
+      if(m.id==="detailMask")V.detail=-1;
+      if(m.id==="bigMask")renderView();}});
+  });
+  window.addEventListener("scroll",syncAnchor,{passive:true});
+  setRange("近 7 天");
+  V.tab="order";
+  renderAll();
+})();
+</script>
+</body>
+</html>
